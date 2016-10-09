@@ -12,6 +12,22 @@ module showTop() {
     import("BottleBank.stl");
 }
 
+module QIReceiver() {
+    color("Black", 50) {
+        cube([45, 75,1]);
+    }
+}
+
+module PhotonPcb() {
+    translate([70,-10,8]) {
+        rotate([0,-90,0]) {
+            color("Blue", 50) {
+                cube([45, 45, 17]);
+            }
+        }
+    }
+}
+
 module loadCell() {
 
     
@@ -52,8 +68,8 @@ module base() {
 
 baseFloorThickness = 5;
 // Load cell sticks out 2mm from the bottle holder part.
-h=baseFloorThickness+1.5;
-pcbBoxDepth = 35;
+h=baseFloorThickness+1.5 + loadcellHeight;
+pcbBoxDepth = 45;
 pcbBoxHeight = h;
     
     difference() {
@@ -77,7 +93,7 @@ pcbBoxHeight = h;
             translate([-30,-(loadcellWidth/2)-1,-0.1]) {
                 
                 translate([0,0,baseFloorThickness-2.5]) {
-                    #cube([52,loadcellWidth+2,3]);
+                    #cube([53,loadcellWidth+2,3]);
                 }
                 
                 //  bolt holes
@@ -95,15 +111,32 @@ pcbBoxHeight = h;
                     }
                 }        
             }
+            
+            // Hollow out QI receier holder.
+            translate([-26,-75/2,1]) {
+               cube([45, 75,baseFloorThickness+1]);
+            }
         }
     }
 }
 
-// 7mm for 
-translate([0,0,7]) {
-    showTop();
-    //loadCell();
+module showModels() {
+    
+    //PhotonPcb();
+    
+    translate([-26,-75/2,0.6]) {
+        //QIReceiver();
+    }
+    
+    // 7mm for 
+    translate([0,0,7]) {
+        //showTop();
+        //loadCell();
+    }
+
 }
+
+showModels();
 
 base();
 
