@@ -1,6 +1,6 @@
 $fn = 90;
 bottleDiameter = 100;
-wallThickness = 2;
+wallThickness = 3;
 bottlePadding = 2;
 
 loadcellHeight = 12.75;
@@ -92,22 +92,25 @@ pcbBoxHeight = h;
             // Holes for the Load Cell
             translate([-30,-(loadcellWidth/2)-1,-0.1]) {
                 
-                translate([0,0,baseFloorThickness-2.5]) {
-                    #cube([53,loadcellWidth+2,3]);
+                // allow more cutout space for the load cell to hover over
+                translate([-10,-1,baseFloorThickness-2.5]) {
+                    #cube([63,loadcellWidth+4,3]);
                 }
                 
                 //  bolt holes
-                translate([59, (12.75/2)+1,0]) {
-                    #cylinder(d=4, h=53);
+                translate([61, (12.75/2)+1,0]) {
+                    // M5 thread in load cell
+                    #cylinder(d=6, h=53);
                     translate([0,0,0]) {
                         // High enough to 
-                        #cylinder(d=10, h=3);
+                        #cylinder(d=12, h=3);
                     }
                 }
-                translate([74, (12.75/2)+1,0]) {
-                    cylinder(d=4, h=53);
+                translate([76, (12.75/2)+1,0]) {
+                    // M5 thread in load cell
+                    cylinder(d=6, h=53);
                     translate([0,0,0]) {
-                        #cylinder(d=10, h=3);
+                        #cylinder(d=12, h=3);
                     }
                 }        
             }
