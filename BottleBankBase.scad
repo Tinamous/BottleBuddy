@@ -18,20 +18,25 @@ module QIReceiver() {
     }
 }
 
-module PhotonPcb() {
-    translate([70,-10,8]) {
-        rotate([0,-90,0]) {
-            color("Blue", 50) {
-                cube([45, 45, 17]);
-            }
-        }
-    }
+module photonPcb() {
+    //color("Blue", 50) {
+        // NB Max PCB Height == ... (10)
+        // Can't socket mount Photon. Perhaps
+        // use SMD version.
+        cube([55, 70, 10]);
+    //}
+}
+
+module loadCellPcb() {
+    cube([30, 50, 6]);
 }
 
 module loadCell() {
 
     
-    translate([-30,-(loadcellWidth/2),-2]) {
+    //translate([-30,-(loadcellWidth/2),-2]) {
+    translate([+(loadcellWidth/2)+1,-46,-0.1]) {
+        rotate([0,0,90]) {
         color("Gainsboro", 50) { 
             difference() {
                 union() {
@@ -62,11 +67,127 @@ module loadCell() {
             }
         }
     }
+    }
+}
+
+baseFloorThickness = 5;
+
+// Holes for the Load Cell
+module loadCellHoles() {
+    //translate([-30,-(loadcellWidth/2)-1,-0.1]) {
+    translate([+(loadcellWidth/2)+1,-46,-0.1]) {
+        rotate([0,0,90]) {
+                
+                // allow more cutout space for the load cell to hover over
+                translate([-3,-1,baseFloorThickness-2.5]) {
+                    cube([56,loadcellWidth+4,3]);
+                }
+                
+                //  bolt holes
+                translate([61, (12.75/2)+1,0]) {
+                    // M5 thread in load cell
+                    cylinder(d=6, h=53);
+                    translate([0,0,0]) {
+                        // High enough to 
+                        cylinder(d=12, h=3);
+                    }
+                }
+                translate([76, (12.75/2)+1,0]) {
+                    // M5 thread in load cell
+                    cylinder(d=6, h=53);
+                    translate([0,0,0]) {
+                        cylinder(d=12, h=3);
+                    }
+                }        
+               
+            }
+        }
+}
+
+module pcbSupport() {
+    difference() {
+        union() {
+            cylinder(d=7, h=8);
+        }
+        union() {
+            translate([0,0,1.5]) {
+                cylinder(d=4, h=8);
+            }
+        }
+    }
+}
+
+module pcbSupports() {
+    // Back supports
+    translate([25,0,0]) {
+        translate([0,20,0]) {
+            pcbSupport();
+        }
+        translate([0,-20,0]) {
+            pcbSupport();
+            
+        }
+    }
+    
+    // Front supports (for load cell amplifier.
+    translate([-40,0,0]) {
+        translate([0,20,0]) {
+            pcbSupport();
+        }
+        translate([0,-20,0]) {
+            pcbSupport();
+            
+        }
+    }
+    
+    translate([-15,0,0]) {
+        translate([0,20,0]) {
+            pcbSupport();
+        }
+        translate([0,-20,0]) {
+            pcbSupport();
+            
+        }
+    }
+}
+
+module pcbSupportHoles() {
+    // Back supports
+    translate([25,0,1.5]) {
+        translate([0,20,0]) {
+            cylinder(d=4, h=8);
+        }
+        translate([0,-20,0]) {
+            cylinder(d=4, h=8);
+            
+        }
+    }
+    
+    // Front supports (for 
+    translate([-40,0,1.5]) {
+        translate([0,20,0]) {
+            cylinder(d=4, h=8);
+        }
+        translate([0,-20,0]) {
+            cylinder(d=4, h=8);
+            
+        }
+    }
+    
+    translate([-15,0,1.5]) {
+        translate([0,20,0]) {
+            cylinder(d=4, h=8);
+        }
+        translate([0,-20,0]) {
+            cylinder(d=4, h=8);
+            
+        }
+    }
 }
 
 module base() {
 
-baseFloorThickness = 5;
+
 // Load cell sticks out 2mm from the bottle holder part.
 h=baseFloorThickness+1.5 + loadcellHeight;
 pcbBoxDepth = 45;
@@ -75,6 +196,8 @@ pcbBoxHeight = h;
     difference() {
         union() {
             cylinder(d=bottleDiameter + bottlePadding + wallThickness, h=h);
+            
+            // Read Box
             translate([32, -40,0]) {
                 cube([pcbBoxDepth,80, pcbBoxHeight]);
             }
@@ -90,37 +213,20 @@ pcbBoxHeight = h;
             }
             
             // Holes for the Load Cell
-            translate([-30,-(loadcellWidth/2)-1,-0.1]) {
-                
-                // allow more cutout space for the load cell to hover over
-                translate([-10,-1,baseFloorThickness-2.5]) {
-                    #cube([63,loadcellWidth+4,3]);
-                }
-                
-                //  bolt holes
-                translate([61, (12.75/2)+1,0]) {
-                    // M5 thread in load cell
-                    #cylinder(d=6, h=53);
-                    translate([0,0,0]) {
-                        // High enough to 
-                        #cylinder(d=12, h=3);
-                    }
-                }
-                translate([76, (12.75/2)+1,0]) {
-                    // M5 thread in load cell
-                    cylinder(d=6, h=53);
-                    translate([0,0,0]) {
-                        #cylinder(d=12, h=3);
-                    }
-                }        
-            }
+            #loadCellHoles();
+            
             
             // Hollow out QI receier holder.
-            translate([-26,-75/2,1]) {
+            translate([+31,-75/2,1]) {
                cube([45, 75,baseFloorThickness+1]);
             }
+            
+            #pcbSupportHoles();
         }
-    }
+    }    
+    
+    // PCB Supports
+    pcbSupports();
 }
 
 module showModels() {
@@ -132,14 +238,23 @@ module showModels() {
     }
     
     // 7mm for 
-    translate([0,0,7]) {
+    translate([-1,2,7]) {
         //showTop();
-        //loadCell();
+        loadCell();
     }
+    
+    translate([20,-35,8]) {
+        %photonPcb();
+    }
+    
+    translate([-42,-25,7]) {
+        %loadCellPcb();
+    }
+        
 
 }
 
-showModels();
+//showModels();
 
 base();
 
