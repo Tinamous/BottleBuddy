@@ -17,7 +17,7 @@ loadCellPcbYOffset = -35;
 loadCellPcbWidth = 21;
 
 module showBottleHolder() {
-    import("BottleBank.stl");
+    import("BottleBuddyTop.stl");
 }
 
 module QIReceiver() {
