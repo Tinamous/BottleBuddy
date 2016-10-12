@@ -1,4 +1,4 @@
-$fn = 150;
+$fn = 190;
 bottleDiameter = 100;
 wallThickness = 3;
 bottlePadding = 2;
@@ -6,16 +6,35 @@ bottlePadding = 2;
 //height = 100;
 height = 40;
 
-loadcellHeight = 2;// 12.75;
+loadcellHeight = 12.75;
 loadcellWidth = 12.75;
 loadcellLength = 80;
-
-module neoPixelStrip() {
-    cube([11,52,4]);
-}
+loadCellOffset = -48;
 
 module bottle() {
     cylinder(d=bottleDiameter, h=225);
+}
+
+module neoPixelPcb() {
+    
+    difference() {
+        union() {
+            cube([10.5, 51.5, 3.5]);
+        }
+        union() {    
+            // 12.8
+            // 26mm between centers.
+            // todo. add wires...
+            
+            translate([3,12.8,0]) {
+                cylinder(d=3, h=20);
+                
+                translate([0,26,0]) {
+                    cylinder(d=3, h=20);
+                }
+            }
+        }
+    }
 }
 
 module nfcPcb() {
@@ -62,42 +81,49 @@ module nfcPcbRC522() {
     }
 }
 
-module loadCell() {
+module importLoadCellModel() {
+    import("LoadCellModel.stl");
+}
 
+module loadCell() {
     
-    translate([+(loadcellWidth/2)+1,-38,-loadcellHeight]) {
-        rotate([0,0,90]) {
-        color("Gainsboro", 50) { 
+    //translate([-30,-(loadcellWidth/2),-2]) {
+    rotate([0,0,90]) {
+        translate([loadCellOffset, -(loadcellWidth)/2 ,-0.1]) {
+        
+        //color("Gainsboro", 50) { 
             difference() {
                 union() {
                     cube([loadcellLength, loadcellWidth, loadcellHeight]);
                     // strain gauge placement + goo
-                    translate([(loadcellLength/2)-15,0,loadcellHeight]) {
-                        cube([30,loadcellWidth,1]);
+                    translate([(loadcellLength-26)/2,0,loadcellHeight]) {
+                        cube([26,loadcellWidth,1]);
                     }
-                    translate([(loadcellLength/2)-15,0,-1]) {
-                        cube([30,loadcellWidth,1]);
+                    translate([(loadcellLength-26)/2,0,-1]) {
+                        cube([26,loadcellWidth,1]);
                     }
                 }
                 union() {
-                    translate([6, (12.75/2),0]) {
+                    translate([5.0, (12.75/2),0]) {
+                        // Bigger top connector holes
+                        // to help align with top when visual testing
+                        #cylinder(d=4, h=40);
+                    }
+                    translate([20, (12.75/2),0]) {
+                        #cylinder(d=4, h=40);
+                    }
+                    //60
+                    translate([60, (12.75/2),0]) {
                         cylinder(d=4, h=13);
                     }
-                    translate([21, (12.75/2),0]) {
-                        cylinder(d=4, h=13);
-                    }
-                    
-                    translate([59, (12.75/2),0]) {
-                        cylinder(d=4, h=13);
-                    }
-                    translate([74, (12.75/2),0]) {
+                    translate([75, (12.75/2),0]) {
                         cylinder(d=4, h=13);
                     }
                 }
-            }
+          //  }
         }
     }
-}
+    }
 }
 
 module M4Bolts() {
@@ -163,28 +189,30 @@ pcbBoxHeight = h;
 
 module loadCellHoles() {
     
+    loadcellHeightOffset = 2;
+    
     //translate([-30,-(loadcellWidth/2)-1,-2]) {
-    translate([+(loadcellWidth/2)+1,-46,-2]) {
+    translate([+(loadcellWidth/2),loadCellOffset,0]) {
             rotate([0,0,90]) {
             // Load Cell cutout to allow for movement.
             // Cut out extra to allow for top 
             // surface of the load cell.
-            translate([26,-1,2]) {
-                cube([loadcellLength - 20, loadcellWidth+4, loadcellHeight+2]);
+            translate([26,-1, 0]) {
+                cube([loadcellLength - 20, loadcellWidth+4, loadcellHeightOffset+2]);
             }
             
             //  bolt holes
-            translate([6, (12.75/2)+1,loadcellHeight + 0]) {
-                cylinder(d=5, h=53);
-                translate([0,0,5-loadcellHeight ]) {
+            translate([5.0, (12.75/2), 0]) {
+                #cylinder(d=4.5, h=53);
+                translate([0,0,5-loadcellHeightOffset ]) {
                     // High enough to 
-                    cylinder(d=10, h=12);
+                    cylinder(d=10, h=102);
                 }
             }
 
-            translate([21, (12.75/2)+1,loadcellHeight + 0]) {
-                cylinder(d=5, h=53);
-                translate([0,0,5-loadcellHeight ]) {
+            translate([20.0, (12.75/2),0]) {
+                cylinder(d=4.5, h=53);
+                translate([0,0,5-loadcellHeightOffset ]) {
                     cylinder(d=10, h=12);
                 }
             }
@@ -192,9 +220,18 @@ module loadCellHoles() {
     }
 }
 
+baseHeight = 2 + 11.9; // 2mm for loadcell scren + 12 mm for. (PCB?)
+pcbDepth = 9;
+
+// How thick the PCB is.
+pcbThickness = 2;
+// Space above the PCB 
+// to allow for wire poking through on connector
+pcbOffsetFromTop = 2;
+
 module bottleHolder() {
 h = 30; //22 //height;    
-baseHeight = loadcellHeight + 11.9;
+
     
     difference() {
         union() {
@@ -205,15 +242,14 @@ baseHeight = loadcellHeight + 11.9;
             wideLid(h);
         }
         union() {
-            
-            
+       
             loadCellHoles();
             
             // PCB
-            // Make the PCB slot in from 
-            translate([-(60/2)+10,-(40/2),loadcellHeight + 5]) {
+            // Make the PCB slot 
+            translate([-(60/2)+10,-(40/2), baseHeight - pcbDepth + 0.1]) {
                 //cube([86+20, 55,3.1]);
-                cube([62, 40,7]);
+                cube([62, 40, pcbDepth]);
                 // TODO: Add holes for PCB when we know where they go!
             }
             
@@ -239,56 +275,81 @@ baseHeight = loadcellHeight + 11.9;
             }
             
             // Cut out for neopixel strip at front.
-            translate([-31,-(54/2) +3,0]) {
-                cylinder(d=3, h=baseHeight+0.1);
+            translate([-32,-(52/2) +30,-2]) {
+                //cylinder(d=3, h=baseHeight+0.1);
+                rotate([30,0,0]) {
+                    cube([6,3,baseHeight+0.1+20]);
+                }
             }
-            translate([-37,-54/2,baseHeight-4]) {
-                cube([13,54,4]);
+            translate([-35,-52/2,baseHeight - pcbDepth + 0.1]) {
+                cube([12,53,pcbDepth]);
             }
             
         }
     }
     
+
+    
     // PCB Pins
-    translate([-(60/2)+11,-(40/2),loadcellHeight + 5]) {
+    translate([-(60/2)+11,-(40/2), baseHeight - pcbDepth]) {
         translate([7,7,0]) {
-            cylinder(d=4, h=1);
-            cylinder(d=2, h=3);
+            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
         }
         
         translate([7,40-7,0]) {
-            cylinder(d=4, h=1);
-            cylinder(d=2, h=3);
+            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
         }
         
         
         translate([44,3,0]) {
-            cylinder(d=4, h=1);
-            cylinder(d=2, h=3);
+            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
         }
         
         translate([44,40-3,0]) {
-            cylinder(d=4, h=1);
-            cylinder(d=2, h=3);
+            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
+        }
+    }
+    
+    //neoPixelPcbPins
+    translate([-34.5,-52/2 + 1,baseHeight - pcbDepth + 0.1]) {
+        translate([3,12.8,0]) {
+            //cylinder(d=3, h=200);
+            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+            cylinder(d=1.5, h=pcbDepth - pcbOffsetFromTop);
+            
+            translate([0,26,0]) {
+                //cylinder(d=3, h=200);
+                cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+                cylinder(d=1.5, h=pcbDepth - pcbOffsetFromTop);
+            }
         }
     }
 }
 
 
 module showModels() {
-    //loadCell();
-    
-    translate([0,0,loadcellHeight + 5]) {
-        //nfcPcb();
-       // nfcPcbRC522();
+    //%loadCell();
+    translate([0,0,-12.75]) {
+        %importLoadCellModel();
     }
+    
+    
+    translate([0,0,baseHeight - pcbDepth]) {
+        //nfcPcb();
+        %nfcPcbRC522();
+    }
+    
+    translate([-34.5,-52/2 +1,baseHeight -5]) {
+        %neoPixelPcb();
+    }
+    
     // 3mm up due to PCB + 2mm layer
     translate([0,0,loadcellHeight + 5 + 5]) {
         //bottle();
-    }
-    
-    translate([-36,-(52/2),10]) {
-        //%neoPixelStrip();
     }
 }
 
