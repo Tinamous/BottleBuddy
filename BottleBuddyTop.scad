@@ -11,6 +11,15 @@ loadcellWidth = 12.75;
 loadcellLength = 80;
 loadCellOffset = -48;
 
+baseHeight = 2 + 11.9; // 2mm for loadcell scren + 12 mm for. (PCB?)
+pcbDepth = 9;
+
+// How thick the PCB is.
+pcbThickness = 2;
+// Space above the PCB 
+// to allow for wire poking through on connector
+pcbOffsetFromTop = 2;
+
 module bottle() {
     cylinder(d=bottleDiameter, h=225);
 }
@@ -126,9 +135,6 @@ module loadCell() {
     }
 }
 
-module M4Bolts() {
-}
-
 module boxLid() {
 pcbBoxDepth = 45;
 pcbBoxHeight = 1;
@@ -220,77 +226,27 @@ module loadCellHoles() {
     }
 }
 
-baseHeight = 2 + 11.9; // 2mm for loadcell scren + 12 mm for. (PCB?)
-pcbDepth = 9;
-
-// How thick the PCB is.
-pcbThickness = 2;
-// Space above the PCB 
-// to allow for wire poking through on connector
-pcbOffsetFromTop = 2;
-
-module bottleHolder() {
-h = 30; //22 //height;    
-
-    
-    difference() {
-        union() {
-            cylinder(d=bottleDiameter + bottlePadding + wallThickness, h=h);
-            
-            //hollowBox(h);
-            //boxLid(h);
-            wideLid(h);
-        }
-        union() {
-       
-            loadCellHoles();
-            
-            // PCB
-            // Make the PCB slot 
-            translate([-(60/2)+10,-(40/2), baseHeight - pcbDepth + 0.1]) {
-                //cube([86+20, 55,3.1]);
-                cube([62, 40, pcbDepth]);
-                // TODO: Add holes for PCB when we know where they go!
-            }
-            
-            // PCB Cables, through to the bottom compartment
-            translate([38,0,0]) {
-                translate([0,-9,0]) {
-                    cube([2, 5, 8]);
-                }
-                translate([0,9-5,0]) {
-                    cube([2, 5, 8]);
-                }
-            }
-            
-            // Cout out the bulk of the inside, except 
-            // give a 4mm lip 2mm high to guide the resin
-            // pouring.
-            translate([0,0,baseHeight+2]) {
-                cylinder(d=bottleDiameter + bottlePadding, h=(h - baseHeight)+0.1);
-            }
-            
-            translate([0,0,baseHeight]) {
-                cylinder(d=bottleDiameter -4, h=(h - baseHeight)+0.1);
-            }
-            
-            // Cut out for neopixel strip at front.
-            translate([-32,-(52/2) +30,-2]) {
-                //cylinder(d=3, h=baseHeight+0.1);
-                rotate([30,0,0]) {
-                    cube([6,3,baseHeight+0.1+20]);
-                }
-            }
-            translate([-35,-52/2,baseHeight - pcbDepth + 0.1]) {
-                cube([12,53,pcbDepth]);
-            }
-            
-        }
+module nfcPcbCutout() {
+    // PCB
+    // Make the PCB slot 
+    translate([-(60/2)+10,-(40/2), baseHeight - pcbDepth + 0.1]) {
+        //cube([86+20, 55,3.1]);
+        cube([62, 40, pcbDepth]);
+        // TODO: Add holes for PCB when we know where they go!
     }
     
+    // PCB Cables, through to the bottom compartment
+    translate([38,0,0]) {
+        translate([0,-9,0]) {
+            cube([2, 5, 8]);
+        }
+        translate([0,9-5,0]) {
+            cube([2, 5, 8]);
+        }
+    }
+}
 
-    
-    // PCB Pins
+module nfcPcbPins() {
     translate([-(60/2)+11,-(40/2), baseHeight - pcbDepth]) {
         translate([7,7,0]) {
             cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
@@ -313,21 +269,76 @@ h = 30; //22 //height;
             cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
         }
     }
-    
-    //neoPixelPcbPins
+}
+
+module neoPixelStripCutout() {
+    // Cut out for neopixel strip at front.
+    translate([-32,-(52/2) +30,-2]) {
+        //cylinder(d=3, h=baseHeight+0.1);
+        rotate([30,0,0]) {
+            cube([6,3,baseHeight+0.1+20]);
+        }
+    }
+    translate([-35,-52/2,baseHeight - pcbDepth + 0.1]) {
+        cube([12,53,pcbDepth]);
+    }
+}
+
+module neoPixelPins() {
+neoPixelPcbThickness = 4;
     translate([-34.5,-52/2 + 1,baseHeight - pcbDepth + 0.1]) {
         translate([3,12.8,0]) {
             //cylinder(d=3, h=200);
-            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - neoPixelPcbThickness);
             cylinder(d=1.5, h=pcbDepth - pcbOffsetFromTop);
             
             translate([0,26,0]) {
                 //cylinder(d=3, h=200);
-                cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
+                cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - neoPixelPcbThickness);
                 cylinder(d=1.5, h=pcbDepth - pcbOffsetFromTop);
             }
         }
     }
+}
+
+module bottleHolder() {
+h = 30; //22 //height;    
+
+    
+    difference() {
+        union() {
+            cylinder(d=bottleDiameter + bottlePadding + wallThickness, h=h);
+            
+            //hollowBox(h);
+            //boxLid(h);
+            wideLid(h);
+        }
+        union() {
+            
+            // Cout out the bulk of the inside, except 
+            // give a 4mm lip 2mm high to guide the resin
+            // pouring.
+            translate([0,0,baseHeight+2]) {
+                cylinder(d=bottleDiameter + bottlePadding, h=(h - baseHeight)+0.1);
+            }
+            
+            translate([0,0,baseHeight]) {
+                cylinder(d=bottleDiameter -4, h=(h - baseHeight)+0.1);
+            }
+       
+            loadCellHoles();
+            
+            nfcPcbCutout();
+            
+            neoPixelStripCutout();            
+        }
+    }
+    
+   
+    // PCB Pins
+    nfcPcbPins();
+    
+    neoPixelPins();
 }
 
 
