@@ -1,4 +1,4 @@
-$fn = 190;
+$fn = 90;
 bottleDiameter = 100;
 wallThickness = 3;
 bottlePadding = 2;
@@ -19,6 +19,13 @@ pcbThickness = 2;
 // Space above the PCB 
 // to allow for wire poking through on connector
 pcbOffsetFromTop = 2;
+
+pcbBoxWidth = 105;
+
+nfcPcbOffset = 0;
+
+// NeoPixels.
+includeNeoPixels = false;
 
 module bottle() {
     cylinder(d=bottleDiameter, h=225);
@@ -58,7 +65,7 @@ module nfcPcbRC522() {
     
     // todo...
     // 85x54mm
-    translate([-(60/2)+10,-(40/2),0]) {
+    translate([-(60/2)+nfcPcbOffset,-(40/2),0]) {
         difference() {
             union() {
                 cube([61, 40,7]);
@@ -135,6 +142,7 @@ module loadCell() {
     }
 }
 
+/*
 module boxLid() {
 pcbBoxDepth = 45;
 pcbBoxHeight = 1;
@@ -153,27 +161,34 @@ pcbBoxHeight = 1;
         }
     }
 }
+*/
 
-module wideLid() {
 pcbBoxDepth = 45;
-pcbBoxHeight = 1;
+module wideLid(yWidth, pcbBoxHeight, hollow = false) {
+
+//pcbBoxHeight = 1;
+//yWidth = 105;
+
+yOffset = -(yWidth/2);
     
-    difference() {
-        union() {
-            translate([0, -52.5,0]) {
-                cube([pcbBoxDepth+32,105, pcbBoxHeight]);
+    translate([0, yOffset, 0]) {
+        difference() {
+            union() {
+                cube([pcbBoxDepth+36,yWidth, pcbBoxHeight]);
             }
-        }
-        union() {
-            // Hollow out the PCB Comparetment
-            translate([31, -38, 0]) {
-            //    cube([pcbBoxDepth,76, pcbBoxHeight]);
+            union() {
+                // Hollow out the PCB Comparetment
+                translate([-2, 1, -2]) {
+                    if (hollow) {
+                        cube([pcbBoxDepth+34, yWidth-2, pcbBoxHeight]);
+                    }
+                }
             }
         }
     }
 }
 
-
+/*
 module hollowBox(h) {
 pcbBoxDepth = 45;
 pcbBoxHeight = h;
@@ -192,6 +207,7 @@ pcbBoxHeight = h;
         }
     }
 }
+*/
 
 module loadCellHoles() {
     
@@ -226,17 +242,18 @@ module loadCellHoles() {
     }
 }
 
+
 module nfcPcbCutout() {
     // PCB
     // Make the PCB slot 
-    translate([-(60/2)+10,-(40/2), baseHeight - pcbDepth + 0.1]) {
+    translate([-(60/2)+nfcPcbOffset,-(40/2), baseHeight - pcbDepth + 0.1]) {
         //cube([86+20, 55,3.1]);
         cube([62, 40, pcbDepth]);
         // TODO: Add holes for PCB when we know where they go!
     }
     
     // PCB Cables, through to the bottom compartment
-    translate([38,0,0]) {
+    translate([28 + nfcPcbOffset,0,0]) {
         translate([0,-9,0]) {
             cube([2, 5, 8]);
         }
@@ -247,7 +264,7 @@ module nfcPcbCutout() {
 }
 
 module nfcPcbPins() {
-    translate([-(60/2)+11,-(40/2), baseHeight - pcbDepth]) {
+    translate([-(60/2)+(nfcPcbOffset+1),-(40/2), baseHeight - pcbDepth]) {
         translate([7,7,0]) {
             cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
             cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
@@ -301,6 +318,54 @@ neoPixelPcbThickness = 4;
     }
 }
 
+module skirt(diameter, h) {
+    cylinder(d=diameter, h=h);
+}
+
+
+module addSkirt() {
+innerDiameter = bottleDiameter + bottlePadding + wallThickness;
+skirtHeight = 22;
+overlapOnTop = 16.5;// 30
+zBottom = -skirtHeight + overlapOnTop -0;
+    
+    translate([0,0,zBottom]) {
+        difference() {
+            union() {                
+                skirt(innerDiameter +4 , skirtHeight);
+                wideLid(pcbBoxWidth +4, skirtHeight - overlapOnTop+2, true);
+            }
+            union() {
+                // Move up to the  top of the skirt
+                // this should be the bottom of the top
+                translate([0,0,skirtHeight - overlapOnTop]) {
+                    // Top overlap. Needs to merge into top shell.
+                    skirt(innerDiameter-1.5, overlapOnTop+0.01);
+                }
+                // Bottom overlap, slightly larger than the bottom
+                // so it moves freely.
+                skirt(innerDiameter+2 , skirtHeight - overlapOnTop +0.01);
+                
+                // Hollow out the PCB Comparetment
+                translate([-2, -(pcbBoxWidth/2) -1, -2]) {
+                    cube([pcbBoxDepth+37, pcbBoxWidth+2, skirtHeight - overlapOnTop+2]);
+                }
+            }
+        }
+    }
+}
+
+// A small hole to allow liquid to drain from the container rather than 
+// sit in it. (Also useful for epoxy fill overflow.
+module liquidEscapeHole() {
+    translate([-(bottleDiameter/2),0,baseHeight+4]) {
+        rotate([0,-120,0]) {
+            cylinder(d=4, h=8);
+        }
+    }
+}
+
+
 module bottleHolder() {
 h = 30; //22 //height;    
 
@@ -311,7 +376,7 @@ h = 30; //22 //height;
             
             //hollowBox(h);
             //boxLid(h);
-            wideLid(h);
+            //wideLid(pcbBoxWidth, 1);
         }
         union() {
             
@@ -323,14 +388,16 @@ h = 30; //22 //height;
             }
             
             translate([0,0,baseHeight]) {
-                cylinder(d=bottleDiameter -4, h=(h - baseHeight)+0.1);
+                cylinder(d=bottleDiameter - 4, h=(h - baseHeight)+0.1);
             }
-       
+                               
             loadCellHoles();
             
             nfcPcbCutout();
             
-            neoPixelStripCutout();            
+            if (includeNeoPixels) {
+                //neoPixelStripCutout();            
+            }
         }
     }
     
@@ -338,7 +405,11 @@ h = 30; //22 //height;
     // PCB Pins
     nfcPcbPins();
     
-    neoPixelPins();
+    if (includeNeoPixels) {
+        //neoPixelPins();
+    }
+    
+    addSkirt();
 }
 
 
@@ -354,8 +425,10 @@ module showModels() {
         %nfcPcbRC522();
     }
     
-    translate([-34.5,-52/2 +1,baseHeight -5]) {
-        %neoPixelPcb();
+    if (includeNeoPixels) {
+        translate([-34.5,-52/2 +1,baseHeight -5]) {
+            //%neoPixelPcb();
+        }
     }
     
     // 3mm up due to PCB + 2mm layer
@@ -364,6 +437,9 @@ module showModels() {
     }
 }
 
-showModels();
+//showModels();
 
-bottleHolder();
+difference() {
+    bottleHolder();
+    liquidEscapeHole();
+}
