@@ -11,8 +11,13 @@ loadcellWidth = 12.75;
 loadcellLength = 80;
 loadCellOffset = -48;
 
-baseHeight = 2 + 10.9; // 2mm for loadcell scren + 12 mm for. (PCB?)
-pcbDepth = 8;
+baseHeight = 2 + 9; // 2mm for loadcell scren + 12 mm for. (PCB?)
+
+neoPixelPcbDepth = 3.4;
+pcbDepth = neoPixelPcbDepth + 2;
+
+nfcPcbLength = 43;
+nfcPcbWidth = 40;
 
 // How thick the PCB is.
 pcbThickness = 2;
@@ -22,75 +27,65 @@ pcbOffsetFromTop = 1;
 
 pcbBoxWidth = 105;
 
-nfcPcbOffset = 0;
+
+sliceTop = true;
+
+// When showing the cutout make the epoxy thicker 
+// top help the Neopixels shing though.
+epoxyDepth = 4;
+
 
 // NeoPixels.
-includeNeoPixels = false;
+includeNeoPixels = true;
 
 module bottle() {
     cylinder(d=bottleDiameter, h=225);
 }
 
-module neoPixelPcb() {
+module neoPixelCirclePcb() {
     
     difference() {
         union() {
-            cube([10.5, 51.5, 3.5]);
+            cylinder(d=66, h=3.4);
         }
         union() {    
-            // 12.8
-            // 26mm between centers.
-            // todo. add wires...
-            
-            translate([3,12.8,0]) {
-                cylinder(d=3, h=20);
-                
-                translate([0,26,0]) {
-                    cylinder(d=3, h=20);
-                }
+            translate([0,0,-0.01]) {
+                cylinder(d=52, h=3.42);
             }
         }
     }
 }
 
 module nfcPcb() {
-    // todo...
-    // 85x54mm
-    translate([-(86/2)+6,-(55/2),0]) {
-        cube([86, 55,3]);
-    }
-}
-
-module nfcPcbRC522() {
-    
-    // todo...
-    // 85x54mm
-    translate([-(60/2)+nfcPcbOffset,-(40/2),0]) {
+nfcPcbHeight = 5;
+    translate([-(43/2),-(40/2),0]) {
+        
         difference() {
             union() {
-                cube([61, 40,7]);
+                cube([43, 40,1.6]);
+                // Dip switch. the tallest thing.
+                translate([8.6,8.6,1.6]) {
+                    cube([6,4,3]);
+                }
                 
-                // Tag center.
-                translate([20,20,0]) {
-                    cylinder(d=8, h=10);
+                // I2C Connection
+                translate([5,20-6,-8]) {
+                    cube([4,12,8]);
+                }
+                
+                // IRQ and Reset pins
+                translate([28,32,-8]) {
+                    cube([8,4,8]);
                 }
             }
             union() {
-                translate([7,7,0]) {
-                    cylinder(d=3, h=4);
+                // Mounting holes.                
+                translate([43-7.5, 7.5,0]) {
+                    #cylinder(d=3, h=nfcPcbHeight+0.01);
                 }
                 
-                translate([7,40-7,0]) {
-                    cylinder(d=3, h=4);
-                }
-                
-                
-                translate([44,3,0]) {
-                    cylinder(d=3, h=4);
-                }
-                
-                translate([44,40-3,0]) {
-                    cylinder(d=3, h=4);
+                translate([7.5, 40-7.5,0]) {
+                    #cylinder(d=3, h=nfcPcbHeight+0.01);
                 }
             }
         }
@@ -185,48 +180,66 @@ module loadCellHoles() {
             
             //  bolt holes
             translate([5.0, (12.75/2), 0]) {
-                #cylinder(d=4.8, h=20);
-                translate([0,0,5-loadcellHeightOffset ]) {
-                    // High enough to 
-                    cylinder(d=10, h=102);
+                cylinder(d=4.8, h=7);
+                
+                // Countersink
+                translate([0,0,3]) {
+                    cylinder(d1=4.8, d2=9, h=4);
+                }
+                
+                // Hollow out the remaining hole
+                translate([0,0,7]) {
+                    cylinder(d=10, h=9);
                 }
             }
 
             translate([20.0, (12.75/2),0]) {
-                #cylinder(d=4.8, h=20);
-                translate([0,0,5-loadcellHeightOffset ]) {
-                    cylinder(d=10, h=12);
+                cylinder(d=4.8, h=7);
+                
+                // Countersink
+                translate([0,0,3]) {
+                    cylinder(d1=4.8, d2=9, h=4);
+                }
+                
+                // Hollow out the remaining hole
+                translate([0,0,7]) {
+                    cylinder(d=10, h=9);
                 }
             }
         }
     }
 }
 
-
 module nfcPcbCutout() {
+
+paddedNfcPcbLength = nfcPcbLength+2; // 43
+paddedNfcPcbWidth = nfcPcbWidth+2; // 40    
+
+    
     // PCB
     // Make the PCB slot 
-    translate([-(60/2)+nfcPcbOffset,-(40/2), baseHeight - pcbDepth + 0.1]) {
-        //cube([86+20, 55,3.1]);
-        cube([62, 40, pcbDepth]);
+    translate([-paddedNfcPcbLength/2,-paddedNfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {
+        
+        cube([paddedNfcPcbLength, paddedNfcPcbWidth, pcbDepth]);
         // TODO: Add holes for PCB when we know where they go!
     }
     
     // PCB Cables, through to the bottom compartment
-    /*
-    translate([28 + nfcPcbOffset,0,0]) {
-        translate([0,-9,0]) {
-            cube([2, 5, 8]);
+    translate([-nfcPcbLength/2,-nfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {    
+        // I2C Connection
+        translate([5,(nfcPcbWidth/2)-6,-8]) {
+            #cube([4,12,8]);
         }
-        translate([0,9-5,0]) {
-            cube([2, 5, 8]);
+        
+        // IRQ and Reset pins
+        translate([28,32,-8]) {
+            #cube([8,4,8]);
         }
     }
-    */
-    
-    translate([28 + nfcPcbOffset,0,0]) {
+        
+    translate([28,0,0]) {
         translate([-1,-13,0]) {
-            cube([3, 26, 8]);
+            //cube([3, 26, 8]);
         }
         translate([0,9-5,0]) {
             //#cube([2, 5, 8]);
@@ -234,56 +247,46 @@ module nfcPcbCutout() {
     }
 }
 
+// PCB goes directly on the base
 module nfcPcbPins() {
-    translate([-(60/2)+(nfcPcbOffset+1),-(40/2), baseHeight - pcbDepth]) {
-        translate([7,7,0]) {
-            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
-            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
+nfcPcbHeight = 3;
+    translate([-(nfcPcbLength/2),-(nfcPcbWidth/2), baseHeight - pcbDepth]) {
+        // Mounting pins.                
+        translate([nfcPcbLength-7.5, 7.5,0]) {
+            cylinder(d1=3,d2=2, h=nfcPcbHeight+0.01);
         }
         
-        translate([7,40-7,0]) {
-            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
-            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
-        }
-        
-        
-        translate([44,3,0]) {
-            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
-            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
-        }
-        
-        translate([44,40-3,0]) {
-            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - pcbThickness);
-            cylinder(d=2, h=pcbDepth - pcbOffsetFromTop);
+        translate([7.5, nfcPcbWidth-7.5,0]) {
+            cylinder(d1=3,d2=2, h=nfcPcbHeight+0.01);
         }
     }
 }
 
-module neoPixelStripCutout() {
-    // Cut out for neopixel strip at front.
-    translate([-32,-(52/2) +30,-2]) {
-        //cylinder(d=3, h=baseHeight+0.1);
-        rotate([30,0,0]) {
-            cube([6,3,baseHeight+0.1+20]);
-        }
-    }
-    translate([-35,-52/2,baseHeight - pcbDepth + 0.1]) {
-        cube([12,53,pcbDepth]);
-    }
-}
-
-module neoPixelPins() {
-neoPixelPcbThickness = 4;
-    translate([-34.5,-52/2 + 1,baseHeight - pcbDepth + 0.1]) {
-        translate([3,12.8,0]) {
-            //cylinder(d=3, h=200);
-            cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - neoPixelPcbThickness);
-            cylinder(d=1.5, h=pcbDepth - pcbOffsetFromTop);
+// Cutout for the neopixel circle
+module neoPixelCutout() {
+    difference() {
+        union() {
+            cylinder(d=67, h=3.41);
             
-            translate([0,26,0]) {
-                //cylinder(d=3, h=200);
-                cylinder(d=4, h=pcbDepth - pcbOffsetFromTop - neoPixelPcbThickness);
-                cylinder(d=1.5, h=pcbDepth - pcbOffsetFromTop);
+            // Holes for wires.
+            // Data in
+            translate([-(53/2) - 5,0,-10]) {
+                cylinder(d=3, h=11);
+            }
+            
+            // +
+            translate([+(53/2) -0.5,+16.5,-10]) {
+                cylinder(d=3, h=11);
+            }
+            
+            // GND
+            translate([+(53/2) - 0.5,-16.5,-10]) {
+                cylinder(d=3, h=11);
+            }
+        }
+        union() {    
+            translate([0,0,-0.01]) {
+                cylinder(d=51, h=3.43);
             }
         }
     }
@@ -313,8 +316,10 @@ photonLedOffset = 20;
 
 module addSkirt() {
 innerDiameter = bottleDiameter + bottlePadding + wallThickness;
-skirtHeight = 30;
+
 overlapOnTop = 16.5;// 30
+skirtHeight = overlapOnTop + 16; // bottom is 16mm deep.
+    
 zBottom = -skirtHeight + overlapOnTop -0;
 padding = 6;
 photonLedOffset = 20;
@@ -390,7 +395,7 @@ h = 30; //22 //height;
             // Cout out the bulk of the inside, except 
             // give a 4mm lip 2mm high to guide the resin
             // pouring.
-            translate([0,0,baseHeight+2]) {
+            translate([0,0,baseHeight+epoxyDepth]) {
                 cylinder(d=bottleDiameter + bottlePadding, h=(h - baseHeight)+0.1);
             }
             
@@ -400,27 +405,30 @@ h = 30; //22 //height;
                                
             loadCellHoles();
             
-            nfcPcbCutout();
+            rotate([0,0,180]) {
+                nfcPcbCutout();
+            }
             
             if (includeNeoPixels) {
-                //neoPixelStripCutout();            
+                // Neopixel is about 3.4mm deep
+                translate([0,0,baseHeight-3.4]) {
+                    neoPixelCutout();            
+                }
             }
         }
     }
     
-   
     // PCB Pins
-    nfcPcbPins();
-    
-    if (includeNeoPixels) {
-        //neoPixelPins();
+    rotate([0,0,180]) {
+        nfcPcbPins();
     }
-    
+        
     addSkirt();
 }
 
 
 module showModels() {
+        
     //%loadCell();
     translate([0,0,-12.75]) {
         %importLoadCellModel();
@@ -428,25 +436,47 @@ module showModels() {
     
     
     translate([0,0,baseHeight - pcbDepth]) {
-        //nfcPcb();
-        %nfcPcbRC522();
+        rotate([0,0,180]) {
+            color("red") nfcPcb();
+        }
     }
     
     if (includeNeoPixels) {
-        translate([-34.5,-52/2 +1,baseHeight -5]) {
-            //%neoPixelPcb();
+        translate([0,0,baseHeight - neoPixelPcbDepth]) {
+            color("blue") neoPixelCirclePcb();
         }
     }
     
     // 3mm up due to PCB + 2mm layer
     translate([0,0,loadcellHeight + 5 + 5]) {
-        //bottle();
+      //bottle();
     }
 }
 
 //showModels();
 
 difference() {
-    bottleHolder();
-    liquidEscapeHole();
+    union() {
+        bottleHolder();
+    }
+    union() {
+        
+        
+        if (sliceTop) {
+            // Cut out front half of the upper.
+            translate([-bottleDiameter-10,-(bottleDiameter+14)/2,baseHeight+epoxyDepth]) {
+                cube([bottleDiameter+10,bottleDiameter+14,30]);
+            }
+            
+            // Cut out front half of the upper.
+            translate([0,-(bottleDiameter+14)/2,baseHeight+epoxyDepth]) {
+                rotate([0,-20,0]) {
+                    cube([bottleDiameter+10,bottleDiameter+14,30]);
+                }
+            }
+        } else {
+            liquidEscapeHole();
+        }
+        
+    }
 }
