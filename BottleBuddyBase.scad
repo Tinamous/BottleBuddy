@@ -1,4 +1,4 @@
-$fn = 190;
+$fn = 90;
 bottleDiameter = 100;
 wallThickness = 3;
 bottlePadding = 2;
@@ -12,9 +12,10 @@ loadCellOffset = -48;
 gabBetweenTopAndBottom = 1.5;
 wallHeight=baseFloorThickness + loadcellHeight - gabBetweenTopAndBottom;
 
-loadCellPcbXOffset = -34;
-loadCellPcbYOffset = -35;
+loadCellPcbXOffset = -42;
+loadCellPcbYOffset = -15;
 loadCellPcbWidth = 21;
+loadCellPcbSpaceBetweenHoles = 18;
 
 module showBottleHolder() {
     import("BottleBuddyTop.stl");
@@ -31,23 +32,31 @@ module photonPcb() {
         // NB Max PCB Height == ... (10)
         // Can't socket mount Photon. Perhaps
         // use SMD version.
-        cube([55, 70, 10]);
+        cube([40, 100, 10]);
     //}
 }
 
-loadCellPcbSpaceBetweenHoles = 15;
+
 
 module loadCellPcb() {
-    cube([21, 36, 6]);
+    cube([23, 33, 6]);
     
     translate([2.5,2.5, -3]) {
         cylinder(d=2, h=20);
+        
+        translate([0,25, 0]) {
+            cylinder(d=2, h=20);
+        }
     }
     
     // 15mm gap between screws
     
     translate([2.5 + loadCellPcbSpaceBetweenHoles,2.5, -3]) {
         cylinder(d=2, h=20);
+        
+        translate([0,25, 0]) {
+            cylinder(d=2, h=20);
+        }
     }
 }
 
@@ -146,6 +155,10 @@ module loadCellGuard() {
                     translate([1,+2, 0]) {
                         cube([loadcellLength + 4,loadcellWidth+4,loadcellHeight]);
                     }
+                    // cut out wire exit
+                    translate([loadcellLength + 4,2, loadcellHeight-4]) {
+                        cube([6,4,4]);
+                    }
                 }
             }
             
@@ -181,50 +194,80 @@ module pcbSupport(d) {
     }
 }
 
-module pcbSupports() {
-    // Back supports
-    translate([23,0,0]) {
-        translate([0,20,0]) {
+module pcbPin() {
+    cylinder(d=4, h=8);
+    cylinder(d=2, h=9.5);
+}
+
+module photonPcbMount() {
+    translate([48-9,-(50-4),0]) {
+        pcbSupport(4);
+        translate([32,0,0]) {
             pcbSupport(4);
-        }
-        translate([0,-20,0]) {
-            pcbSupport(4);
-            
         }
     }
-    
-    // Front supports (for load cell amplifier.
+    translate([48-9,(50-4),0]) {
+        pcbSupport(4);
+        translate([32,0,0]) {
+            pcbSupport(4);
+        }
+        
+    }
+}
+
+module loadCellPcbMount() {
+    // Front supports (for load cell amplifier)
     translate([loadCellPcbXOffset,loadCellPcbYOffset,0]) {
         
         // Offset from top right corder for 
         // the pcb hole.
         translate([+2.5,+2.5,0]) {
-            pcbSupport(2);
+            pcbPin(2);
+        }
+        
+        // left hand corner
+        translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0]) {
+            // Hole for a M3 brass fixing.
+            pcbSupport(4);
+        }
+    }
+    
+    translate([loadCellPcbXOffset,loadCellPcbYOffset + 25,0]) {
+        
+        // Offset from top right corder for 
+        // the pcb hole.
+        translate([+2.5,+2.5,0]) {
+            pcbPin(2);
             
         }
         
         // left hand corner
         translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0]) {
-            pcbSupport(2);
+            pcbPin(2);
         }
     }
-    
-    // left hand corner
-    
+}
+
+module pcbSupports() {
+    photonPcbMount();
+    loadCellPcbMount();    
 }
 module pcbSupportHoles() {
     // Back supports
-    translate([23,0,1.5]) {
-        translate([0,20,0]) {
-            cylinder(d=4, h=8);
+    translate([48-9,-(50-4),1.5]) {
+        #cylinder(d=4, h=8);
+        translate([32,0,0]) {
+            #cylinder(d=4, h=8);
         }
-        translate([0,-20,0]) {
-            cylinder(d=4, h=8);
-            
+    }
+    translate([48-9,(50-4),1.5]) {
+        #cylinder(d=4, h=8);
+        translate([32,0,0]) {
+            #cylinder(d=4, h=8);
         }
     }
     
-    // Front supports (for 
+    // Front supports (for load cell amplifier)
     translate([loadCellPcbXOffset,loadCellPcbYOffset,1]) {
         translate([+2.5,+2.5,0]) {
             #cylinder(d=2, h=8);
@@ -234,6 +277,23 @@ module pcbSupportHoles() {
         translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0]) {
             #cylinder(d=2, h=18);
             
+        }
+    }
+}
+
+// Hole for the USB Micro connector on the photon.
+// height depends on if the Photon is mounted on headers 
+// or directly on the PCB
+module usbMicroHole() {
+cubeWidth = 14;
+cubeHeight = 12; // 8; 
+    translate([75,-cubeWidth/2,4]) {
+        // Without headers
+        #cube([10,cubeWidth,cubeHeight]);
+        
+        // With headers
+        translate([0,0,12]) {
+            #cube([10,cubeWidth,cubeHeight]);
         }
     }
 }
@@ -253,7 +313,7 @@ pcbBoxHeight = h;
             //translate([32, -40,0]) {
                 //cube([pcbBoxDepth,80, pcbBoxHeight]);
             translate([0, -52.5,0]) {
-                cube([pcbBoxDepth+32,105, pcbBoxHeight]);
+                cube([pcbBoxDepth+33,105, pcbBoxHeight]);
             }
         }
         union() {
@@ -266,25 +326,19 @@ pcbBoxHeight = h;
             }
             
             // Hollow out the rear comparetment
-            translate([13, -47, baseFloorThickness]) {
+            translate([10, -51, baseFloorThickness]) {
                 //cube([pcbBoxDepth,76, pcbBoxHeight-baseFloorThickness +0.1]);
-                cube([pcbBoxDepth+16,94, pcbBoxHeight-baseFloorThickness +0.1]);
+                cube([pcbBoxDepth+21,102, pcbBoxHeight-baseFloorThickness +0.1]);
             }
-            
-            // Hollow out the rest or read comparment of PCB.
-            // Not very tidy at this time!
-            // match PCB height
-            translate([10.5, -51, 8]) {
-                //cube([pcbBoxDepth,76, pcbBoxHeight-baseFloorThickness +0.1]);
-                cube([pcbBoxDepth+18.5,102, pcbBoxHeight-baseFloorThickness +0.1]);
-            }
-                        
+                                    
             // Hollow out QI receier holder.
-            translate([+29,-75/2,1]) {
-               cube([45, 75,baseFloorThickness+1]);
+            translate([+36,-85/2,1]) {
+               cube([40, 85,baseFloorThickness+1]);
             }
             
             pcbSupportHoles();
+            
+            usbMicroHole();
         }
     }    
         
@@ -307,9 +361,9 @@ module showModels() {
         //QIReceiver();
     }
     
-    // 7mm for 
-    translate([0,0,17.5]) {
-        showBottleHolder();
+    // top
+    translate([0,0, 27.5]) {
+        //showBottleHolder();
     }
     
     translate([20,-35,8]) {
