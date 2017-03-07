@@ -314,7 +314,10 @@ photonLedOffset = 20;
     }
 }
 
-module addSkirt() {
+// Add an outline of a the base with a gap around the base
+// so that liquid doesn't get into the base
+// and to cover the gap between base and top.
+module addSkirtV1() {
 innerDiameter = bottleDiameter + bottlePadding + wallThickness;
 
 overlapOnTop = 16.5;// 30
@@ -377,15 +380,20 @@ module liquidEscapeHole() {
     }
 }
 
-module addPcbMount(x,y) {
-    translate([x,y,-2]) {
-        cylinder(d=7, h=1);
+module addPcbMount(x,y,padHeight) {
+    translate([x,y,-padHeight]) {
+        cylinder(d=7, h=padHeight+1);
     }
 }
 
-module addPcbMounts() {
-    addPcbMount(14,-43);
-    addPcbMount(-14,-43);
+module addPcbMounts(padHeight) {
+    addPcbMount(14,-43, padHeight);
+    addPcbMount(-14,-43,padHeight);
+    
+    // Pads only to rest PCB on, no hold in PCB
+    addPcbMount(0,45,padHeight);
+    addPcbMount(45,0,padHeight);
+    addPcbMount(-45,0,padHeight);
 }
 
 // Extra holes into the base for the PCB mounts.
@@ -414,7 +422,13 @@ h = 30; //22 //height;
             //wideLid(pcbBoxWidth, 1);
             
             // Alternative PCB mounting for circular PCB
-            addPcbMounts();
+            // use 0 for an easier (flat) print with little support structure 
+            // neeed but added washers required to pull the PCB away from the 
+            // plastic.
+            // HOWEVER, with the skirt printed that will need a large support fill area.
+            // so it won't matter.
+            padHeight = 0;
+            addPcbMounts(padHeight);
         }
         union() {
             
@@ -451,7 +465,28 @@ h = 30; //22 //height;
         nfcPcbPins();
     }
         
-    addSkirt();
+    //addSkirtV1();
+}
+
+module skirtV2() {
+    translate([0,0,-5]) {
+        difference() {
+            cylinder(d1=114, d2=105, h=15);
+            translate([0,0,-0.01]) {
+                cylinder(d1=112, d2=104, h=15.02);
+            }
+        }
+    }
+    
+    // Base is about 16.2mm height (excluding feet)
+    translate([0,0,-15]) {
+        difference() {
+            cylinder(d=114, h=10);
+            translate([0,0,-0.01]) {
+                cylinder(d=112, h=10.02);
+            }
+        }
+    }
 }
 
 
@@ -486,6 +521,7 @@ module showModels() {
 difference() {
     union() {
         bottleHolder();
+        skirtV2();
     }
     union() {
         
