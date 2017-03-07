@@ -64,26 +64,26 @@ module neoPixelCutout() {
     difference() {
         union() {
             cylinder(d=67, h=3.41);
-        }
-        union() {    
-            translate([0,0,-0.01]) {
-                cylinder(d=51, h=3.43);
-            }
-            
+                        
             // Holes for wires.
             // Data in
             translate([-(53/2) - 5,0,-10]) {
-                #cylinder(d=2, h=11);
+                #cylinder(d=3, h=11);
             }
             
             // +
             translate([+(53/2) -0.5,+16.5,-10]) {
-                #cylinder(d=2, h=11);
+                #cylinder(d=3, h=11);
             }
             
             // GND
             translate([+(53/2) - 0.5,-16.5,-10]) {
-                #cylinder(d=2, h=11);
+                #cylinder(d=3, h=11);
+            }
+        }
+        union() {    
+            translate([0,0,-0.01]) {
+                cylinder(d=51, h=3.43);
             }
         }
     }
@@ -150,8 +150,8 @@ nfcPcbWidth = 40; // 40
 
 module nfcPcbCutout() {
 
-paddedNfcPcbLength = nfcPcbLength+1; // 43
-paddedNfcPcbWidth = nfcPcbWidth+1; // 40    
+paddedNfcPcbLength = nfcPcbLength+2; // 43
+paddedNfcPcbWidth = nfcPcbWidth+2; // 40    
 
     
     // PCB
@@ -165,8 +165,8 @@ paddedNfcPcbWidth = nfcPcbWidth+1; // 40
     // PCB Cables, through to the bottom compartment
     translate([-nfcPcbLength/2,-nfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {    
         // I2C Connection
-        translate([5,(nfcPcbWidth/2)-6,-8]) {
-            #cube([4,12,8]);
+        translate([3,(nfcPcbWidth/2)-6,-8]) {
+            #cube([6,12,8]);
         }
         
         // IRQ and Reset pins
@@ -251,5 +251,5 @@ h = 14; //22 //height;
 bottleHolder();
 
 translate([0,0,baseHeight - pcbDepth]) {
-   // showModels();
+    //showModels();
 }

@@ -227,8 +227,8 @@ paddedNfcPcbWidth = nfcPcbWidth+2; // 40
     // PCB Cables, through to the bottom compartment
     translate([-nfcPcbLength/2,-nfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {    
         // I2C Connection
-        translate([5,(nfcPcbWidth/2)-6,-8]) {
-            #cube([4,12,8]);
+        translate([3,(nfcPcbWidth/2)-6,-8]) {
+            #cube([6,12,8]);
         }
         
         // IRQ and Reset pins
@@ -274,13 +274,13 @@ module neoPixelCutout() {
                 cylinder(d=3, h=11);
             }
             
-            // +
-            translate([+(53/2) -0.5,+16.5,-10]) {
+            // GND
+            translate([+(53/2),+16.0,-10]) {
                 cylinder(d=3, h=11);
             }
             
-            // GND
-            translate([+(53/2) - 0.5,-16.5,-10]) {
+            // +
+            translate([+(53/2), -16.0,-10]) {
                 cylinder(d=3, h=11);
             }
         }
@@ -377,6 +377,29 @@ module liquidEscapeHole() {
     }
 }
 
+module addPcbMount(x,y) {
+    translate([x,y,-2]) {
+        cylinder(d=7, h=1);
+    }
+}
+
+module addPcbMounts() {
+    addPcbMount(14,-43);
+    addPcbMount(-14,-43);
+}
+
+// Extra holes into the base for the PCB mounts.
+module addPcbMountHoles() {
+    
+    translate([14,-43,-2]) {
+        #cylinder(d=4.2, h=5);
+    }
+    
+    translate([-14,-43,-2]) {
+        #cylinder(d=4.2, h=5);
+    }
+}
+
 
 module bottleHolder() {
 h = 30; //22 //height;    
@@ -389,6 +412,9 @@ h = 30; //22 //height;
             //hollowBox(h);
             //boxLid(h);
             //wideLid(pcbBoxWidth, 1);
+            
+            // Alternative PCB mounting for circular PCB
+            addPcbMounts();
         }
         union() {
             
@@ -415,6 +441,8 @@ h = 30; //22 //height;
                     neoPixelCutout();            
                 }
             }
+            
+            addPcbMountHoles();
         }
     }
     
@@ -449,7 +477,7 @@ module showModels() {
     
     // 3mm up due to PCB + 2mm layer
     translate([0,0,loadcellHeight + 5 + 5]) {
-      //bottle();
+      //%bottle();
     }
 }
 
