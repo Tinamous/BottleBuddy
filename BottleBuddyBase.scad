@@ -115,23 +115,24 @@ module loadCellHoles() {
                     loadCellHole();
                 }
                 translate([75, 0,0]) {
-                    #loadCellHole();
+                    loadCellHole();
                 }        
             }
            
         }
     }
 }
+
 module loadCellHole() {
     // M5 thread in load cell
-    #cylinder(d=10, h=1);
+    //cylinder(d=10, h=1);
     // Counter sink
-    translate([0,0,1]) {
-        #cylinder(d1=10, d2=5.5,h=3.5);
+    translate([0,0,-0.1]) {
+        cylinder(d1=10, d2=5.5,h=3.5);
     }
     // hole for threaded bolt part
-    translate([0,0,4]) {
-            #cylinder(d=5.5, h=10);
+    translate([0,0,3]) {
+            cylinder(d=5.5, h=10);
     }
 }
 
@@ -175,14 +176,14 @@ module loadCellPadding() {
 
 
 
-module pcbSupport(d) {
+module pcbSupport(d, h) {
     difference() {
         union() {
-            cylinder(d=7, h=8);
+            cylinder(d=7, h=h);
         }
         union() {
-            translate([0,0,1.5]) {
-                cylinder(d=d, h=8);
+            translate([0,0,-0.1]) {
+                cylinder(d=d, h=h+2);
             }
         }
     }
@@ -199,14 +200,14 @@ module loadCellPcbMount() {
         
         // Offset from top right corder for 
         // the pcb hole.
-        translate([+2.5,+2.5,0]) {
+        translate([+2.5,+2.5,0.5]) {
             pcbPin(2);
         }
         
         // left hand corner
-        translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0]) {
+        translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 5]) {
             // Hole for a M3 brass fixing.
-            pcbSupport(4);
+            pcbSupport(3.6, 3.5);
         }
     }
     
@@ -214,13 +215,13 @@ module loadCellPcbMount() {
         
         // Offset from top right corder for 
         // the pcb hole.
-        translate([+2.5,+2.5,0]) {
+        translate([+2.5,+2.5,0.5]) {
             pcbPin(2);
             
         }
         
         // left hand corner
-        translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0]) {
+        translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0.5]) {
             pcbPin(2);
         }
     }
@@ -232,14 +233,10 @@ module pcbSupports() {
 module pcbSupportHoles() {
    
     // Front supports (for load cell amplifier)
-    translate([loadCellPcbXOffset,loadCellPcbYOffset,1]) {
-        translate([+2.5,+2.5,0]) {
-            #cylinder(d=2, h=8);
-            
-        }
-    
+    translate([loadCellPcbXOffset,loadCellPcbYOffset,-0.1]) {
         translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0]) {
-            #cylinder(d=2, h=18);
+            cylinder(d1=7,d2=3.5, h=2);
+            cylinder(d=3.5, h=18);
             
         }
     }
@@ -248,13 +245,32 @@ module pcbSupportHoles() {
 module batteryBox() {
     difference() {
         union() {
-            cube([37.5, 55, 12]);
+            cube([36.5, 54, 12]);
         }
         union() {
-            translate([1.5, 1.5,1]) {
+            translate([1, 1,1]) {
                 cube([34.5, 52, 12]);
             }
         }
+    }
+}
+
+// Add small indents for the feet to be stuck into
+// placed evenly around.
+module footPadHoles() {
+offset = (bottleDiameter /2) -25;
+    
+    translate([offset,offset,-0.01]) {
+        #cylinder(d=10, h=1.1);
+    }
+    translate([-offset,offset,-0.01]) {
+        #cylinder(d=10, h=1.1);
+    }
+    translate([offset,-offset,-0.01]) {
+        #cylinder(d=10, h=1.1);
+    }
+    translate([-offset,-offset,-0.01]) {
+        #cylinder(d=10, h=1);
     }
 }
 
@@ -279,13 +295,15 @@ pcbBoxHeight = h;
             }
             
             pcbSupportHoles();
+            
+            footPadHoles();
         }
     }    
         
     // PCB Supports
     pcbSupports();
     
-    loadCellGuard();
+    //loadCellGuard();
     
     translate([8, -55/2, 3]) {
         batteryBox();
