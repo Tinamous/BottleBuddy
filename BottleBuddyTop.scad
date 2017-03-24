@@ -179,30 +179,40 @@ module loadCellHoles() {
             }
             
             //  bolt holes
-            translate([5.0, (12.75/2), 0]) {
+            // Outside
+            // Raise the bolt up x mm's so it has more material underneath
+            translate([5.0, (12.75/2), 3]) {
+                translate([0, 0, -10]) {
+                    cylinder(d=4.8, h=11);
+                }
+            
                 cylinder(d=4.8, h=7);
                 
                 // Countersink
-                translate([0,0,3]) {
+                translate([0,0,5]) {
                     cylinder(d1=4.8, d2=9, h=4);
                 }
                 
                 // Hollow out the remaining hole
-                translate([0,0,7]) {
+                translate([0,0,8]) {
                     cylinder(d=10, h=9);
                 }
             }
 
+            // Inside
             translate([20.0, (12.75/2),0]) {
+                translate([0, 0, -10]) {
+                    cylinder(d=4.8, h=11);
+                }
                 cylinder(d=4.8, h=7);
                 
                 // Countersink
-                translate([0,0,3]) {
+                translate([0,0,5]) {
                     cylinder(d1=4.8, d2=9, h=4);
                 }
                 
                 // Hollow out the remaining hole
-                translate([0,0,7]) {
+                translate([0,0,8]) {
                     cylinder(d=10, h=9);
                 }
             }
@@ -382,7 +392,7 @@ module liquidEscapeHole() {
 
 module addPcbMount(x,y,padHeight) {
     translate([x,y,-padHeight]) {
-        cylinder(d=7, h=padHeight+1);
+        cylinder(d=9, h=padHeight+2);
     }
 }
 
@@ -400,11 +410,19 @@ module addPcbMounts(padHeight) {
 module addPcbMountHoles() {
     
     translate([14,-43,-2]) {
-        #cylinder(d=4.2, h=5);
+        #cylinder(d=4.2, h=6);
+        // Finish the hole off to a cone shape to 
+        // try and stop Cura putting supports in
+        translate([0,0,6]) {
+            #cylinder(d1=4.2, d2=0, h=4);
+        }
     }
     
     translate([-14,-43,-2]) {
-        #cylinder(d=4.2, h=5);
+        #cylinder(d=4.2, h=6);
+        translate([0,0,6]) {
+            #cylinder(d1=4.2, d2=0, h=4);
+        }
     }
 }
 
@@ -420,17 +438,16 @@ h = 30; //22 //height;
             //hollowBox(h);
             //boxLid(h);
             //wideLid(pcbBoxWidth, 1);
-            
-            // Alternative PCB mounting for circular PCB
-            // use 0 for an easier (flat) print with little support structure 
-            // neeed but added washers required to pull the PCB away from the 
-            // plastic.
-            // HOWEVER, with the skirt printed that will need a large support fill area.
-            // so it won't matter.
-            padHeight = 0;
-            addPcbMounts(padHeight);
         }
         union() {
+            
+            // Cut out a recess for the PCB to sit in.
+            translate([0,0,-0.1]) {
+                // Don't size with bottleDiameter
+                // to provide greater support for larger bottles
+                cylinder(d=102, h=4.1);
+            }
+            
             
             // Cout out the bulk of the inside, except 
             // give a 4mm lip 2mm high to guide the resin
@@ -456,7 +473,39 @@ h = 30; //22 //height;
                 }
             }
             
+            translate([0,0,4]) {
+                addPcbMountHoles();
+            }
+        }
+    }
+    
+    // Made some additions after hollowing out the base a bit.
+    difference() {
+        union() {                
+            // Alternative PCB mounting for circular PCB
+            // use 0 for an easier (flat) print with little support structure 
+            // neeed but added washers required to pull the PCB away from the 
+            // plastic.
+            // HOWEVER, with the skirt printed that will need a large support fill area.
+            // so it won't matter.
+            // 1mm high so it's lifted off the base slightly
+            // to help with rough bottom from printing
+            translate([0,0,4]) {
+                padHeight = 1;
+                #addPcbMounts(padHeight);
+            }
+            
+            // Add a bit of padding back to the load cell area
+            translate([-(loadcellWidth/2),loadCellOffset, 0]) {
+                // Increase this height to give the top more clearance from the base.
+                cube([loadcellWidth, 25, 4.1]);
+            }
+        } 
+        union() {
             addPcbMountHoles();
+            
+            // Add the load cell holes back in again.
+            loadCellHoles();
         }
     }
     
@@ -471,9 +520,9 @@ h = 30; //22 //height;
 module skirtV2() {
     translate([0,0,-5]) {
         difference() {
-            cylinder(d1=114, d2=105, h=15);
+            cylinder(d1=bottleDiameter+14, d2=bottleDiameter+5, h=15);
             translate([0,0,-0.01]) {
-                cylinder(d1=112, d2=104, h=15.02);
+                cylinder(d1=bottleDiameter+12, d2=bottleDiameter+4, h=15.02, $fn=200);
             }
         }
     }
@@ -481,11 +530,35 @@ module skirtV2() {
     // Base is about 16.2mm height (excluding feet)
     translate([0,0,-15]) {
         difference() {
-            cylinder(d=114, h=10);
+            cylinder(d=bottleDiameter+14, h=10);
             translate([0,0,-0.01]) {
-                cylinder(d=112, h=10.02);
+                cylinder(d=bottleDiameter+ 12, h=10.02, $fn=200);
             }
         }
+    }
+}
+
+module skirtV3a(size1, size2) {
+    hull() {
+            // Base is about 16.2mm height (excluding feet)
+        union() {
+            translate([0,0,-15]) {
+                cylinder(d=size1, h=12, $fn=10);
+            }
+        }
+        
+        union() {
+            translate([0,0,10]) {
+                cylinder(d=size2, h=1);
+            }
+        }
+    }
+}
+
+module skirtV3() {
+    difference() {
+        skirtV3a(114, 106);
+        skirtV3a(112, 104);
     }
 }
 
@@ -522,9 +595,9 @@ difference() {
     union() {
         bottleHolder();
         skirtV2();
+        //skirtV3();
     }
     union() {
-        
         
         if (sliceTop) {
             // Cut out front half of the upper.
