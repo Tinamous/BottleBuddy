@@ -7935,19 +7935,19 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <part name="GND5" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="SUPPLY5" library="SparkFun-Aesthetics" deviceset="3.3V" device=""/>
 <part name="JP4" library="SparkFun-Connectors" deviceset="M02" device="-JST-2MM-SMT"/>
-<part name="R1" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
-<part name="R3" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
-<part name="R4" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
+<part name="R1" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="100r"/>
+<part name="R3" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="1k5"/>
+<part name="R4" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="1k5"/>
 <part name="SUPPLY6" library="SparkFun-Aesthetics" deviceset="3.3V" device=""/>
 <part name="H1" library="holes" deviceset="MOUNT-HOLE" device="3.2"/>
 <part name="H4" library="holes" deviceset="MOUNT-HOLE" device="3.2"/>
 <part name="R2" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
 <part name="R5" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
 <part name="GND6" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
-<part name="R6" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
-<part name="D3" library="SparkFun-LED" deviceset="LED" device="1206"/>
-<part name="D4" library="SparkFun-LED" deviceset="LED" device="1206"/>
-<part name="R7" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206"/>
+<part name="R6" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="1k5"/>
+<part name="D3" library="SparkFun-LED" deviceset="LED" device="1206" value="RED"/>
+<part name="D4" library="SparkFun-LED" deviceset="LED" device="1206" value="BLUE"/>
+<part name="R7" library="SparkFun-Resistors" deviceset="RESISTOR" device="1206" value="1k5"/>
 <part name="SUPPLY7" library="SparkFun-Aesthetics" deviceset="VIN" device=""/>
 <part name="GND7" library="SparkFun-Aesthetics" deviceset="GND" device=""/>
 <part name="SUPPLY10" library="SparkFun-Aesthetics" deviceset="VIN" device=""/>
@@ -7990,8 +7990,14 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <instance part="SUPPLY5" gate="G$1" x="134.62" y="68.58"/>
 <instance part="JP4" gate="G$1" x="58.42" y="160.02" rot="MR180"/>
 <instance part="R1" gate="G$1" x="33.02" y="53.34" rot="R270"/>
-<instance part="R3" gate="G$1" x="88.9" y="45.72" rot="MR90"/>
-<instance part="R4" gate="G$1" x="83.82" y="45.72" rot="MR90"/>
+<instance part="R3" gate="G$1" x="88.9" y="45.72" smashed="yes" rot="MR90">
+<attribute name="NAME" x="95.25" y="47.2186" size="1.778" layer="95" rot="MR0"/>
+<attribute name="VALUE" x="95.25" y="50.038" size="1.778" layer="96" rot="MR0"/>
+</instance>
+<instance part="R4" gate="G$1" x="83.82" y="45.72" smashed="yes" rot="MR90">
+<attribute name="NAME" x="82.55" y="47.2186" size="1.778" layer="95" rot="MR0"/>
+<attribute name="VALUE" x="82.55" y="50.038" size="1.778" layer="96" rot="MR0"/>
+</instance>
 <instance part="SUPPLY6" gate="G$1" x="88.9" y="55.88" rot="MR0"/>
 <instance part="H1" gate="G$1" x="233.68" y="40.64"/>
 <instance part="H4" gate="G$1" x="215.9" y="45.72"/>

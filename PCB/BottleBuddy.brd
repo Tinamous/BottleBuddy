@@ -729,17 +729,17 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <element name="JP4" library="SparkFun-Connectors" package="JST-2-SMD" value="" x="71.440096875" y="32.158678125" rot="R90">
 <attribute name="PROD_ID" value="CONN-11443" x="71.440096875" y="32.158678125" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="R1" library="SparkFun-Resistors" package="1206" value="" x="15.77571875" y="-25.839321875" rot="R90"/>
-<element name="R3" library="SparkFun-Resistors" package="1206" value="" x="49.90715" y="20.31766875" rot="R180"/>
-<element name="R4" library="SparkFun-Resistors" package="1206" value="" x="58.00843125" y="13.850578125" rot="R270"/>
+<element name="R1" library="SparkFun-Resistors" package="1206" value="100r" x="15.77571875" y="-25.839321875" rot="R90"/>
+<element name="R3" library="SparkFun-Resistors" package="1206" value="1k5" x="49.90715" y="20.31766875" rot="R180"/>
+<element name="R4" library="SparkFun-Resistors" package="1206" value="1k5" x="58.00843125" y="13.850578125" rot="R270"/>
 <element name="H1" library="holes" package="3,2" value="MOUNT-HOLE3.2" x="7" y="-14" locked="yes"/>
 <element name="H4" library="holes" package="3,2" value="MOUNT-HOLE3.2" x="7" y="14" locked="yes"/>
 <element name="R2" library="SparkFun-Resistors" package="1206" value="" x="41.275" y="-44.45" rot="R180"/>
 <element name="R5" library="SparkFun-Resistors" package="1206" value="" x="41.275" y="-40.005"/>
-<element name="R6" library="SparkFun-Resistors" package="1206" value="" x="57.87208125" y="-45.11861875" rot="R180"/>
-<element name="D3" library="SparkFun-LED" package="LED-1206" value="" x="50.003440625" y="-47.294459375" rot="R180"/>
-<element name="D4" library="SparkFun-LED" package="LED-1206" value="" x="97.9852" y="-0.1082" rot="R90"/>
-<element name="R7" library="SparkFun-Resistors" package="1206" value="" x="88.78" y="-22.465" rot="R90"/>
+<element name="R6" library="SparkFun-Resistors" package="1206" value="1k5" x="57.87208125" y="-45.11861875" rot="R180"/>
+<element name="D3" library="SparkFun-LED" package="LED-1206" value="RED" x="50.003440625" y="-47.294459375" rot="R180"/>
+<element name="D4" library="SparkFun-LED" package="LED-1206" value="BLUE" x="97.9852" y="-0.1082" rot="R90"/>
+<element name="R7" library="SparkFun-Resistors" package="1206" value="1k5" x="88.78" y="-22.465" rot="R90"/>
 <element name="LOGO2" library="SparkFun-Aesthetics" package="OSHW-LOGO-L" value="OSHW-LOGOL" x="49.9625" y="31.6925"/>
 <element name="JP5" library="SparkFun-Connectors" package="1X04" value="NFC" x="46.2" y="15.9"/>
 <element name="GND" library="testpad" package="TP20R" value="TPTP20R" x="70.25" y="25.2">
