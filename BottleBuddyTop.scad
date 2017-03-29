@@ -1,4 +1,4 @@
-$fn = 90;
+$fn=300;
 bottleDiameter = 100;
 wallThickness = 3;
 bottlePadding = 2;
@@ -522,7 +522,7 @@ module skirtV2() {
         difference() {
             cylinder(d1=bottleDiameter+14, d2=bottleDiameter+5, h=15);
             translate([0,0,-0.01]) {
-                cylinder(d1=bottleDiameter+12, d2=bottleDiameter+4, h=15.02, $fn=200);
+                cylinder(d1=bottleDiameter+10, d2=bottleDiameter+1, h=15.02);
             }
         }
     }
@@ -532,7 +532,7 @@ module skirtV2() {
         difference() {
             cylinder(d=bottleDiameter+14, h=10);
             translate([0,0,-0.01]) {
-                cylinder(d=bottleDiameter+ 12, h=10.02, $fn=200);
+                cylinder(d=bottleDiameter+ 10, h=10.02);
             }
         }
     }
