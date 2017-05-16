@@ -1,4 +1,4 @@
-$fn=300;
+$fn=360;
 bottleDiameter = 100;
 wallThickness = 3;
 bottlePadding = 2;
@@ -36,7 +36,7 @@ epoxyDepth = 4;
 
 
 // NeoPixels.
-includeNeoPixels = true;
+includeNeoPixels = false;
 
 module bottle() {
     cylinder(d=bottleDiameter, h=225);
@@ -238,12 +238,12 @@ paddedNfcPcbWidth = nfcPcbWidth+2; // 40
     translate([-nfcPcbLength/2,-nfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {    
         // I2C Connection
         translate([3,(nfcPcbWidth/2)-6,-8]) {
-            #cube([6,12,8]);
+            cube([6,12,8.01]);
         }
         
         // IRQ and Reset pins
         translate([28,32,-8]) {
-            #cube([8,4,8]);
+            cube([8,4,8.01]);
         }
     }
         
@@ -318,7 +318,7 @@ photonLedOffset = 20;
         union() {
             // Hole in lid for Photon LED.
             translate([pcbBoxDepth +pcbBoxExtraDepth - photonLedOffset, 0, -3]) {
-                #cylinder(d=4, h=6);
+                cylinder(d=4, h=6);
             }
         }
     }
@@ -390,47 +390,70 @@ module liquidEscapeHole() {
     }
 }
 
+// **********************************************************
+
+// Add individual PCB mounting pad.
 module addPcbMount(x,y,padHeight) {
     translate([x,y,-padHeight]) {
         cylinder(d=9, h=padHeight+2);
     }
 }
 
+// Add the PCB mounting Pads
 module addPcbMounts(padHeight) {
     addPcbMount(14,-43, padHeight);
     addPcbMount(-14,-43,padHeight);
+    addPcbMount(0,45,padHeight);
     
     // Pads only to rest PCB on, no hold in PCB
-    addPcbMount(0,45,padHeight);
-    addPcbMount(45,0,padHeight);
-    addPcbMount(-45,0,padHeight);
+    addPcbMount(43,0,padHeight);
+    addPcbMount(-43,0,padHeight);
 }
 
+// Holds in PCB mounting pads.
 // Extra holes into the base for the PCB mounts.
 module addPcbMountHoles() {
+    // 2mm for small self tapper hole (v1.1 PCB)
+// 3mm for self tappers.
+// 4.2mm for inserts
+holeDiameter = 3; 
     
-    translate([14,-43,-2]) {
-        #cylinder(d=4.2, h=6);
+    addPcbMountHole(14,-43,6, holeDiameter);
+    addPcbMountHole(-14,-43,6, holeDiameter);
+    addPcbMountHole(0,45,6, 2);
+}
+
+module addPcbMountHole(x,y, height, holeDiameter, holeDiameterTop) {
+// 2mm for small self tapper hole (v1.1 PCB)
+// 3mm for self tappers.
+// 4.2mm for inserts
+    
+    translate([x,y,-2]) {
+        cylinder(d=holeDiameter, h=height);
         // Finish the hole off to a cone shape to 
         // try and stop Cura putting supports in
         translate([0,0,6]) {
-            #cylinder(d1=4.2, d2=0, h=4);
-        }
-    }
-    
-    translate([-14,-43,-2]) {
-        #cylinder(d=4.2, h=6);
-        translate([0,0,6]) {
-            #cylinder(d1=4.2, d2=0, h=4);
+            cylinder(d1=holeDiameter, d2=0, h=height-2);
         }
     }
 }
 
+// Hole for the LED fitted on the PCB
+// (V1.1 PCB)
+module addPcbLedHole() {
+    translate([-43,0, 0]) {
+        cylinder(d=3, h=20);
+    }
+}
+
+
+
+// **********************************************************
 
 module bottleHolder() {
 h = 30; //22 //height;    
 
-    
+    // Main Body
     difference() {
         union() {
             cylinder(d=bottleDiameter + bottlePadding + wallThickness, h=h);
@@ -476,6 +499,8 @@ h = 30; //22 //height;
             translate([0,0,4]) {
                 addPcbMountHoles();
             }
+            
+            addPcbLedHole();
         }
     }
     
@@ -491,8 +516,9 @@ h = 30; //22 //height;
             // 1mm high so it's lifted off the base slightly
             // to help with rough bottom from printing
             translate([0,0,4]) {
-                padHeight = 1;
-                #addPcbMounts(padHeight);
+                // remember photon lets sticking through
+                padHeight = 2;
+                addPcbMounts(padHeight);
             }
             
             // Add a bit of padding back to the load cell area
@@ -506,10 +532,13 @@ h = 30; //22 //height;
             
             // Add the load cell holes back in again.
             loadCellHoles();
+            
+            // Ensure the LED hole goes through the PCB mounting holes as well
+            addPcbLedHole();
         }
     }
     
-    // PCB Pins
+    // PCB Pins for the NFC PCB
     rotate([0,0,180]) {
         nfcPcbPins();
     }
@@ -520,9 +549,10 @@ h = 30; //22 //height;
 module skirtV2() {
     translate([0,0,-5]) {
         difference() {
-            cylinder(d1=bottleDiameter+14, d2=bottleDiameter+5, h=15);
+            cylinder(d1=bottleDiameter+16, d2=bottleDiameter+5, h=15);
             translate([0,0,-0.01]) {
-                cylinder(d1=bottleDiameter+10, d2=bottleDiameter+1, h=15.02);
+                // 4mm smaller (gives 2mm wall width)
+                #cylinder(d1=bottleDiameter+10, d2=bottleDiameter+1, h=15.02);
             }
         }
     }
@@ -530,7 +560,7 @@ module skirtV2() {
     // Base is about 16.2mm height (excluding feet)
     translate([0,0,-15]) {
         difference() {
-            cylinder(d=bottleDiameter+14, h=10);
+            cylinder(d=bottleDiameter+16, h=10);
             translate([0,0,-0.01]) {
                 cylinder(d=bottleDiameter+ 10, h=10.02);
             }
