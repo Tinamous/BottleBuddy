@@ -58,7 +58,7 @@ module neoPixelCirclePcb() {
 
 module nfcPcb() {
 nfcPcbHeight = 5;
-    translate([-(43/2),-(40/2),0]) {
+    translate([-(43/2),-(40/2),16]) {
         
         difference() {
             union() {
@@ -69,13 +69,18 @@ nfcPcbHeight = 5;
                 }
                 
                 // I2C Connection
-                translate([5,20-6,-8]) {
-                    cube([4,12,8]);
+                translate([5,20-6,-18]) {
+                    cube([4,12,18]);
                 }
                 
                 // IRQ and Reset pins
-                translate([28,32,-8]) {
-                    cube([8,4,8]);
+                translate([29,32,-18]) {
+                    cube([7,4,18]);
+                }
+                
+                // The other Reset pin.... 
+                translate([27,8,-18]) {
+                    cube([5,4,18]);
                 }
             }
             union() {
@@ -181,7 +186,7 @@ module loadCellHoles() {
             //  bolt holes
             // Outside
             // Raise the bolt up x mm's so it has more material underneath
-            translate([5.0, (12.75/2), 3]) {
+            translate([5.0, (12.75/2), 0]) {
                 translate([0, 0, -10]) {
                     cylinder(d=4.8, h=11);
                 }
@@ -200,7 +205,7 @@ module loadCellHoles() {
             }
 
             // Inside
-            translate([20.0, (12.75/2),0]) {
+            translate([20.0, (12.75/2), 0]) {
                 translate([0, 0, -10]) {
                     cylinder(d=4.8, h=11);
                 }
@@ -222,28 +227,31 @@ module loadCellHoles() {
 
 module nfcPcbCutout() {
 
-paddedNfcPcbLength = nfcPcbLength+2; // 43
-paddedNfcPcbWidth = nfcPcbWidth+2; // 40    
+paddedNfcPcbLength = nfcPcbLength+4; // 43
+paddedNfcPcbWidth = nfcPcbWidth+5; // 40    
 
     
     // PCB
     // Make the PCB slot 
     translate([-paddedNfcPcbLength/2,-paddedNfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {
-        
         cube([paddedNfcPcbLength, paddedNfcPcbWidth, pcbDepth]);
-        // TODO: Add holes for PCB when we know where they go!
     }
     
     // PCB Cables, through to the bottom compartment
     translate([-nfcPcbLength/2,-nfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {    
         // I2C Connection
         translate([3,(nfcPcbWidth/2)-6,-8]) {
-            cube([6,12,8.01]);
+            cube([5,12,8.01]);
         }
         
         // IRQ and Reset pins
-        translate([28,32,-8]) {
-            cube([8,4,8.01]);
+        translate([29,32,-8]) {
+            cube([7,4,8.01]);
+        }
+        
+        // The other Reset pin.... 
+        translate([27,8,-8]) {
+            cube([5,4,8]);
         }
     }
         
@@ -259,7 +267,7 @@ paddedNfcPcbWidth = nfcPcbWidth+2; // 40
 
 // PCB goes directly on the base
 module nfcPcbPins() {
-nfcPcbHeight = 3;
+nfcPcbHeight = 2;
     translate([-(nfcPcbLength/2),-(nfcPcbWidth/2), baseHeight - pcbDepth]) {
         // Mounting pins.                
         translate([nfcPcbLength-7.5, 7.5,0]) {
@@ -418,8 +426,8 @@ module addPcbMountHoles() {
 // 4.2mm for inserts
 holeDiameter = 3; 
     
-    addPcbMountHole(14,-43,6, holeDiameter);
-    addPcbMountHole(-14,-43,6, holeDiameter);
+    addPcbMountHole(14,-43,8, holeDiameter);
+    addPcbMountHole(-14,-43,8, holeDiameter);
     addPcbMountHole(0,45,6, 2);
 }
 
@@ -433,7 +441,7 @@ module addPcbMountHole(x,y, height, holeDiameter, holeDiameterTop) {
         // Finish the hole off to a cone shape to 
         // try and stop Cura putting supports in
         translate([0,0,6]) {
-            cylinder(d1=holeDiameter, d2=0, h=height-2);
+            #cylinder(d1=holeDiameter, d2=0, h=height-2);
         }
     }
 }
@@ -480,7 +488,8 @@ h = 30; //22 //height;
             }
             
             translate([0,0,baseHeight]) {
-                cylinder(d=bottleDiameter - 4, h=(h - baseHeight)+0.1);
+                // possibly + bottlePadding
+                cylinder(d=bottleDiameter + bottlePadding, h=(h - baseHeight)+0.1);
             }
                                
             loadCellHoles();
@@ -603,13 +612,13 @@ module showModels() {
     
     translate([0,0,baseHeight - pcbDepth]) {
         rotate([0,0,180]) {
-            color("red") nfcPcb();
+            % nfcPcb();
         }
     }
     
     if (includeNeoPixels) {
         translate([0,0,baseHeight - neoPixelPcbDepth]) {
-            color("blue") neoPixelCirclePcb();
+            % neoPixelCirclePcb();
         }
     }
     
@@ -619,7 +628,7 @@ module showModels() {
     }
 }
 
-//showModels();
+showModels();
 
 difference() {
     union() {
