@@ -1,10 +1,16 @@
 $fn=360;
+
+// Size of the bottle.
+// 100mm Minimum to fit the PCB and allow space for the load cell
 bottleDiameter = 100;
 wallThickness = 3;
 bottlePadding = 2;
 
-//height = 100;
-height = 40;
+// Overall height. If using "sliceTop" to slice the top lowering
+// this will reduce the height to the flat part.
+// otherwise this govenrs the overall outer wall
+// height for the bottle to drop into.
+height = 30;
 
 loadcellHeight = 12.75;
 loadcellWidth = 12.75;
@@ -16,27 +22,77 @@ baseHeight = 2 + 9; // 2mm for loadcell scren + 12 mm for. (PCB?)
 neoPixelPcbDepth = 3.4;
 pcbDepth = neoPixelPcbDepth + 2;
 
+// Size of the NFC PCB in the top of the unit
 nfcPcbLength = 43;
 nfcPcbWidth = 40;
 
-// How thick the PCB is.
-pcbThickness = 2;
-// Space above the PCB 
-// to allow for wire poking through on connector
-pcbOffsetFromTop = 1;
+// The area that gets cutout for the NFC PCB
+paddedNfcPcbLength = nfcPcbLength+4; // 43
+paddedNfcPcbWidth = nfcPcbWidth+5; // 40  
 
-pcbBoxWidth = 105;
-
-
+// Causes a diagonal cut through the top.
+// If not set uses just a cylinder as the bottle holder.
 sliceTop = true;
 
-// When showing the cutout make the epoxy thicker 
-// top help the Neopixels shing though.
+// We cover the NFC PCB and area
+// with Epoxy to provide a water resitant
+// seal for the NFC and inner electronics.
+// How deep should this be.. (mm).
+// Essentially governs the depth of the out rim of the 
+// unit.
 epoxyDepth = 4;
-
 
 // NeoPixels.
 includeNeoPixels = false;
+
+// 0 : No skirt
+// 2 : Version 2 Skirt
+// 3 : Version 3 skirt
+skirtOption = 2;
+
+// PCB Pad height
+// Gap between the base and the PCB.
+// remember photon lets sticking through
+// The lower the better to allow more room
+// for the battery etc.
+padHeight = 2;
+
+// How much to reduce the PCB pad
+// that the LED goes through.
+// V1 PCB - reduce down by 2mm or so (padHeight) to allow for a regular
+// 3mm LED to be inserted
+// V1.1 PCB set to 0
+ledPadAdjust = 3;
+
+// ==============================================================
+// Models to help visualise
+// ==============================================================
+
+module showModels() {
+        
+    //%loadCell();
+    translate([0,0,-12.75]) {
+        %importLoadCellModel();
+    }
+    
+    
+    translate([0,0,baseHeight - pcbDepth]) {
+        rotate([0,0,180]) {
+            % nfcPcb();
+        }
+    }
+    
+    if (includeNeoPixels) {
+        translate([0,0,baseHeight - neoPixelPcbDepth]) {
+            % neoPixelCirclePcb();
+        }
+    }
+    
+    // 3mm up due to PCB + 2mm layer
+    translate([0,0,loadcellHeight + 5 + 5]) {
+      //%bottle();
+    }
+}
 
 module bottle() {
     cylinder(d=bottleDiameter, h=225);
@@ -103,11 +159,9 @@ module importLoadCellModel() {
 
 module loadCell() {
     
-    //translate([-30,-(loadcellWidth/2),-2]) {
     rotate([0,0,90]) {
         translate([loadCellOffset, -(loadcellWidth)/2 ,-0.1]) {
         
-        //color("Gainsboro", 50) { 
             difference() {
                 union() {
                     cube([loadcellLength, loadcellWidth, loadcellHeight]);
@@ -136,38 +190,12 @@ module loadCell() {
                         cylinder(d=4, h=13);
                     }
                 }
-          //  }
-        }
-    }
-    }
-}
-
-
-pcbBoxDepth = 45;
-pcbBoxExtraDepth =37;
-module wideLid(yWidth, pcbBoxHeight, hollow = false) {
-
-//pcbBoxHeight = 1;
-//yWidth = 105;
-
-yOffset = -(yWidth/2);
-    
-    translate([0, yOffset, 0]) {
-        difference() {
-            union() {
-                cube([pcbBoxDepth+pcbBoxExtraDepth,yWidth, pcbBoxHeight]);
-            }
-            union() {
-                // Hollow out the PCB Comparetment
-                translate([-2, 1, -2]) {
-                    if (hollow) {
-                     //   cube([pcbBoxDepth+34, yWidth-2, pcbBoxHeight]);
-                    }
-                }
             }
         }
     }
 }
+
+// ==============================================================
 
 module loadCellHoles() {
     
@@ -225,10 +253,9 @@ module loadCellHoles() {
     }
 }
 
+// Cutout in the top for the NFC pcb to rest in.
+// and for holes to the lower PCB
 module nfcPcbCutout() {
-
-paddedNfcPcbLength = nfcPcbLength+4; // 43
-paddedNfcPcbWidth = nfcPcbWidth+5; // 40    
 
     
     // PCB
@@ -240,18 +267,18 @@ paddedNfcPcbWidth = nfcPcbWidth+5; // 40
     // PCB Cables, through to the bottom compartment
     translate([-nfcPcbLength/2,-nfcPcbWidth/2, baseHeight - pcbDepth + 0.1]) {    
         // I2C Connection
-        translate([3,(nfcPcbWidth/2)-6,-8]) {
-            cube([5,12,8.01]);
+        translate([3,(nfcPcbWidth/2)-6,-8.1]) {
+            cube([5,12,8.2]);
         }
         
         // IRQ and Reset pins
-        translate([29,32,-8]) {
-            cube([7,4,8.01]);
+        translate([29,32,-8.1]) {
+            cube([7,4,8.2]);
         }
         
         // The other Reset pin.... 
-        translate([27,8,-8]) {
-            cube([5,4,8]);
+        translate([27,8,-8.1]) {
+            cube([5,4,8.2]);
         }
     }
         
@@ -266,6 +293,7 @@ paddedNfcPcbWidth = nfcPcbWidth+5; // 40
 }
 
 // PCB goes directly on the base
+// These are wrong at present, PCB holes have changed for Neopixels so these need to be updated.
 module nfcPcbPins() {
 nfcPcbHeight = 2;
     translate([-(nfcPcbLength/2),-(nfcPcbWidth/2), baseHeight - pcbDepth]) {
@@ -280,7 +308,9 @@ nfcPcbHeight = 2;
     }
 }
 
+
 // Cutout for the neopixel circle
+// This is optional
 module neoPixelCutout() {
     difference() {
         union() {
@@ -310,11 +340,6 @@ module neoPixelCutout() {
     }
 }
 
-module skirt(diameter, h) {
-    cylinder(d=diameter, h=h);
-}
-
-
 module photonLedLens() {
 photonLedOffset = 20;
     difference() {
@@ -330,62 +355,6 @@ photonLedOffset = 20;
             }
         }
     }
-}
-
-// Add an outline of a the base with a gap around the base
-// so that liquid doesn't get into the base
-// and to cover the gap between base and top.
-module addSkirtV1() {
-innerDiameter = bottleDiameter + bottlePadding + wallThickness;
-
-overlapOnTop = 16.5;// 30
-skirtHeight = overlapOnTop + 16; // bottom is 16mm deep.
-    
-zBottom = -skirtHeight + overlapOnTop -0;
-padding = 6;
-photonLedOffset = 20;
-    
-    translate([0,0,zBottom]) {
-        difference() {
-            union() {                
-                skirt(innerDiameter +padding , skirtHeight);
-                wideLid(pcbBoxWidth +padding, skirtHeight - overlapOnTop+2, true);
-                
-                // "Lens" for Photon LED.
-                
-
-                
-            }
-            union() {
-                // Move up to the  top of the skirt
-                // this should be the bottom of the top
-                translate([0,0,skirtHeight - overlapOnTop]) {
-                    // Top overlap. Needs to merge into top shell.
-                    skirt(innerDiameter-1.5, overlapOnTop+0.01);
-                }
-                // Bottom overlap, slightly larger than the bottom
-                // so it moves freely.
-                skirt(innerDiameter+2 , skirtHeight - overlapOnTop +0.01);
-                
-                // Hollow out the PCB Comparetment
-                translate([-2, -(pcbBoxWidth/2) -1, -2]) {
-                    cube([pcbBoxDepth+37, pcbBoxWidth+2, skirtHeight - overlapOnTop+2]);
-                }
-                
-                // Hole in lid for Photon LED.
-                translate([pcbBoxDepth +pcbBoxExtraDepth - photonLedOffset, 0, -zBottom]) {
-                        cylinder(d=4, h=40);
-                }
-                
-                // USB cutout.
-                translate([pcbBoxDepth +pcbBoxExtraDepth-5, (-15/2), -2]) {
-                    #cube([10,15,skirtHeight - overlapOnTop]);
-                }
-            }
-        }
-    }
-    
-    photonLedLens();
 }
 
 // A small hole to allow liquid to drain from the container rather than 
@@ -414,8 +383,10 @@ module addPcbMounts(padHeight) {
     addPcbMount(0,45,padHeight);
     
     // Pads only to rest PCB on, no hold in PCB
-    addPcbMount(43,0,padHeight);
-    addPcbMount(-43,0,padHeight);
+    addPcbMount(47,0,padHeight);
+    
+    // This is the pad for the LED 
+    addPcbMount(-47,0,padHeight - ledPadAdjust);
 }
 
 // Holds in PCB mounting pads.
@@ -428,7 +399,7 @@ holeDiameter = 3;
     
     addPcbMountHole(14,-43,8, holeDiameter);
     addPcbMountHole(-14,-43,8, holeDiameter);
-    addPcbMountHole(0,45,6, 2);
+    addPcbMountHole(0,45,8, 2);
 }
 
 module addPcbMountHole(x,y, height, holeDiameter, holeDiameterTop) {
@@ -437,11 +408,11 @@ module addPcbMountHole(x,y, height, holeDiameter, holeDiameterTop) {
 // 4.2mm for inserts
     
     translate([x,y,-2]) {
-        cylinder(d=holeDiameter, h=height);
+        #cylinder(d=holeDiameter, h=height);
         // Finish the hole off to a cone shape to 
         // try and stop Cura putting supports in
-        translate([0,0,6]) {
-            #cylinder(d1=holeDiameter, d2=0, h=height-2);
+        translate([0,0,4]) {
+            #cylinder(d1=holeDiameter, d2=0, h=height-4);
         }
     }
 }
@@ -449,26 +420,27 @@ module addPcbMountHole(x,y, height, holeDiameter, holeDiameterTop) {
 // Hole for the LED fitted on the PCB
 // (V1.1 PCB)
 module addPcbLedHole() {
-    translate([-43,0, 0]) {
-        cylinder(d=3, h=20);
+    translate([-47,0, 0]) {
+        // 3.2mm to allow a 3mm LED to be pushed in.
+        cylinder(d=3.2, h=20);
+    }
+    
+    translate([-47,0, 7]) {
+        rotate([0,-60,0]) {
+            cylinder(d=3, h=20);
+        }
     }
 }
-
-
 
 // **********************************************************
 
 module bottleHolder() {
-h = 30; //22 //height;    
-
+h = height;
+    
     // Main Body
     difference() {
         union() {
             cylinder(d=bottleDiameter + bottlePadding + wallThickness, h=h);
-            
-            //hollowBox(h);
-            //boxLid(h);
-            //wideLid(pcbBoxWidth, 1);
         }
         union() {
             
@@ -525,8 +497,6 @@ h = 30; //22 //height;
             // 1mm high so it's lifted off the base slightly
             // to help with rough bottom from printing
             translate([0,0,4]) {
-                // remember photon lets sticking through
-                padHeight = 2;
                 addPcbMounts(padHeight);
             }
             
@@ -547,94 +517,116 @@ h = 30; //22 //height;
         }
     }
     
-    // PCB Pins for the NFC PCB
+    // vertical Pins for the NFC PCB to align it
     rotate([0,0,180]) {
         nfcPcbPins();
     }
-        
-    //addSkirtV1();
 }
 
+// ==============================================================
+// Skirt options
+// ==============================================================
+
 module skirtV2() {
-    translate([0,0,-5]) {
+    translate([0,0,-10]) {
         difference() {
             cylinder(d1=bottleDiameter+16, d2=bottleDiameter+5, h=15);
             translate([0,0,-0.01]) {
                 // 4mm smaller (gives 2mm wall width)
-                #cylinder(d1=bottleDiameter+10, d2=bottleDiameter+1, h=15.02);
+                cylinder(d1=bottleDiameter+10, d2=bottleDiameter+1, h=15.02);
             }
         }
     }
     
     // Base is about 16.2mm height (excluding feet)
-    translate([0,0,-15]) {
+    translate([0,0,-21]) {
         difference() {
-            cylinder(d=bottleDiameter+16, h=10);
+            cylinder(d=bottleDiameter+16, h=11);
             translate([0,0,-0.01]) {
-                cylinder(d=bottleDiameter+ 10, h=10.02);
+                cylinder(d=bottleDiameter+ 10, h=13.02);
             }
         }
     }
 }
 
-module skirtV3a(size1, size2) {
+module skirtV3a(baseDiameter, topDiameter) {
     hull() {
-            // Base is about 16.2mm height (excluding feet)
+        // Base polygon. Number of sides set by $fn
+        // Base is about 16.2mm height (excluding feet)
         union() {
             translate([0,0,-15]) {
-                cylinder(d=size1, h=12, $fn=10);
+                cylinder(d=baseDiameter, h=8, $fn=12);
             }
         }
         
+        // Upper cicle that joins the main bottle holder top
         union() {
-            translate([0,0,10]) {
-                cylinder(d=size2, h=1);
+            translate([0,0,9]) {
+                #cylinder(d=topDiameter, h=1);
             }
         }
     }
 }
 
 module skirtV3() {
+    // Create a hull and then empty the inside.
     difference() {
-        skirtV3a(114, 106);
-        skirtV3a(112, 104);
+        skirtV3a(116, 104);
+        skirtV3a(114, 102);
     }
 }
 
+// ==============================================================
 
-module showModels() {
-        
-    //%loadCell();
-    translate([0,0,-12.75]) {
-        %importLoadCellModel();
-    }
+module computeVolumeEpoxyNeeded() {
+    echo("================================="); 
+    echo("Epoxy volume required: "); 
+    echo("---------------------------------"); 
     
+    // width/length are in mm.
+    // use cm to give a nice cm3 (ml) value.
+    // cm * cm => cm2 * cm => cm3
+    pcbVolume = paddedNfcPcbLength/10 * paddedNfcPcbWidth/10 * (pcbDepth/10);
+    echo("Volume of epoxy for PCB cutout is about (ml)", pcbVolume); 
     
-    translate([0,0,baseHeight - pcbDepth]) {
-        rotate([0,0,180]) {
-            % nfcPcb();
-        }
-    }
+    // radius of the cylinder for the epoxy
+    r = (bottleDiameter + bottlePadding) /2;
     
-    if (includeNeoPixels) {
-        translate([0,0,baseHeight - neoPixelPcbDepth]) {
-            % neoPixelCirclePcb();
-        }
-    }
+    // r is in mm.
+    // epoxyDepth is in mm.
+    // work in cm's to give cm3
+    // cm2 x cm => cm3
+    cylinderVolume = 3.14 * pow(r/10, 2) * (epoxyDepth/10);
+    echo("Volume of epoxy for cylinder cutout is about (ml)", cylinderVolume); 
     
-    // 3mm up due to PCB + 2mm layer
-    translate([0,0,loadcellHeight + 5 + 5]) {
-      //%bottle();
-    }
+    volume = cylinderVolume + pcbVolume;
+    
+    echo("Volume of epoxy required is about (ml)", volume); 
+    oneThird = volume/3;
+    echo("Assume 1g == 1ml of epoxy (it doesn't)"); 
+    echo("Part A = ", oneThird * 2); 
+    echo("Part B = ", oneThird); 
+    echo("================================="); 
 }
+
+
+// ==============================================================
+// Main
+// ==============================================================
 
 showModels();
+
+computeVolumeEpoxyNeeded();
 
 difference() {
     union() {
         bottleHolder();
-        skirtV2();
-        //skirtV3();
+        
+        if (skirtOption == 2) {
+            skirtV2();
+        } else if (skirtOption == 3) {
+            skirtV3();
+        }
     }
     union() {
         
