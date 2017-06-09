@@ -11,6 +11,9 @@ loadCellOffset = -48;
 
 gabBetweenTopAndBottom = 1.5;
 wallHeight=baseFloorThickness + loadcellHeight - gabBetweenTopAndBottom;
+
+// Dont need such a large height as the top covers most of it.
+wallHeight = 5;
 echo ("WallHeight (i.e. total height)=" ,wallHeight);
 
 loadCellPcbXOffset = -36;
@@ -18,6 +21,9 @@ loadCellPcbYOffset = -32;
 loadCellPcbWidth = 21;
 loadCellPcbSpaceBetweenHoles = 18;
 
+// ====================================================
+// Models
+// ====================================================
 module showBottleHolder() {
     import("BottleBuddyTop.stl");
 }
@@ -97,8 +103,11 @@ module loadCell() {
     }
 }
 
+// ====================================================
 
-
+// ====================================================
+// Load cell placement
+// ====================================================
 // Holes for the Load Cell
 module loadCellHoles() {
     //translate([-30,-(loadcellWidth/2)-1,-0.1]) {
@@ -178,7 +187,7 @@ module loadCellGuard2() {
                 }
                 union() {
                     translate([1,+2, 0]) {
-                        #cube([loadcellLength + 4,loadcellWidth+2,loadcellHeight]);
+                        cube([loadcellLength + 4,loadcellWidth+2,loadcellHeight]);
                     }
                     // cut out wire exit
                     translate([loadcellLength + 4,2, loadcellHeight-4]) {
@@ -204,9 +213,11 @@ module loadCellPadding() {
     }
 }
 
-// ******************************************************
+// ====================================================
 // Load cell PCB support pins/pads/holes
-// ******************************************************
+// ====================================================
+
+// Bolt hole for load cell PCB.
 module pcbSupport(d, h) {
     difference() {
         union() {
@@ -220,41 +231,49 @@ module pcbSupport(d, h) {
     }
 }
 
-module pcbPin() {
-    cylinder(d=4, h=3);
-    cylinder(d=2, h=4.5);
+// Pin for load cell PCB
+module pcbPin(height) {
+    cylinder(d=4, h=height);
+    cylinder(d=2, h=height + 1.5);
 }
 
+// Mounting points in the base
+// for the load cell amplifier PCB.
+// This will eventually not be needed as the load
+// cell PCB will move to the top PCB.
 module loadCellPcbMount() {
+pcbHeightOffset = 2.5;
+    
     rotate([0,0,180]) {
         // Front supports (for load cell amplifier)
         translate([loadCellPcbXOffset,loadCellPcbYOffset,0]) {
             
             // Offset from top right corder for 
             // the pcb hole.
-            translate([+2.5,+2.5,0.5]) {
-                pcbPin(2);
+            translate([+2.5,+2.5, 1]) {
+                pcbPin(pcbHeightOffset );
             }
             
-            // left hand corner
+            // left hand corner, use a screw to hold the PCB in place.
             translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, baseFloorThickness]) {
                 // Hole for a M3 bolt to come through
                 pcbSupport(3.6, 3.5 - baseFloorThickness);
             }
-        }
         
-        translate([loadCellPcbXOffset,loadCellPcbYOffset + 25,0]) {
-            
-            // Offset from top right corder for 
-            // the pcb hole.
-            translate([+2.5,+2.5,0.5]) {
-                pcbPin(2);
+        
+            translate([0,25,0]) {
                 
-            }
-            
-            // left hand corner
-            translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 0.5]) {
-                pcbPin(2);
+                // Offset from top right corder for 
+                // the pcb hole.
+                translate([+2.5,+2.5,1]) {
+                    pcbPin(pcbHeightOffset );
+                    
+                }
+                
+                // left hand corner
+                translate([+2.5 + loadCellPcbSpaceBetweenHoles, +2.5, 1]) {
+                    pcbPin(pcbHeightOffset );
+                }
             }
         }
     }
@@ -437,7 +456,7 @@ module showModels() {
     
     //translate([-42,-25,7]) {
     rotate([0,0,180]) {
-        translate([loadCellPcbXOffset, loadCellPcbYOffset, 5]) {
+        translate([loadCellPcbXOffset, loadCellPcbYOffset, 3.5]) {
             %loadCellPcb();
         }
     }
