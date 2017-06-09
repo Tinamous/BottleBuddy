@@ -11544,7 +11544,7 @@ has been measured</text>
 <text x="238.506" y="7.366" size="1.27" layer="97">V1.1</text>
 <text x="215.9" y="93.98" size="1.27" layer="97">BME280</text>
 <text x="186.182" y="153.416" size="1.27" layer="97">R18 - keep the scale in low power mode when CPU shutdown</text>
-<text x="2.54" y="-12.7" size="1.27" layer="97">TODO: R19 - Can this be higher than 1k5 (10k too high)
+<text x="88.9" y="7.62" size="1.27" layer="97" rot="R90">TODO: R19 - Can this be higher than 1k5 (10k too high)
 NFC reader has 10k pull-up. Perhaps remove that?</text>
 <text x="149.86" y="43.18" size="1.27" layer="97">http://www.ebay.co.uk/itm/MMA8452-Three-Axis-Accelerator-Module-PIC-ARM-Pi-Arduino-New-UK-Stock-UK-Seller-/201495494714?var=&amp;hash=item2eea11403a:m:miFNPKejG0VKZeNKhIcq8lA</text>
 </plain>
